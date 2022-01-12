@@ -1,0 +1,15 @@
+#
+# rTexPacker atlas descriptor file (v1.0)
+#
+# Number of packed sprites:     6
+#
+# Atlas info:    a <imagePath> <width> <height> <spriteCount> <isFont> <fontSize>
+# Sprite info:   s <nameId> <originX> <originY> <positionX> <positionY> <sourceSizeWidth> <sourceSizeHeight> <padding> <trimmed> <trimRecX> <trimRecY> <trimRecWidth> <trimRecHeight>
+#
+a plants.png 128 128 6 0 32
+s tile_0124 0 0 0 0 18 18 2 0 1 6 16 12
+s tile_0125 0 0 22 0 18 18 2 0 1 0 16 18
+s tile_0126 0 0 44 0 18 18 2 0 3 0 12 18
+s tile_0127 0 0 66 0 18 18 2 0 2 0 14 18
+s tile_0128 0 0 88 0 18 18 2 0 3 6 12 12
+s tile_0129 0 0 0 22 18 18 2 0 3 1 12 17
