@@ -1,4 +1,5 @@
 #include "batch_renderer.h"
+#include <string.h>
 
 BatchRenderer::BatchRenderer(int vertex_capacity) {
     m_vbo = sg_make_buffer({
@@ -7,7 +8,7 @@ BatchRenderer::BatchRenderer(int vertex_capacity) {
         .usage = SG_USAGE_STREAM,
     });
 
-    unsigned short *indices = new unsigned short[vertex_capacity * 6 / 4];
+    unsigned short *indices = new unsigned short[vertex_capacity * 6 / 4]{};
     unsigned short stride = 0;
     for (int i = 0; i < vertex_capacity * 6 / 4; i += 6) {
         indices[i + 0] = stride + 0;
@@ -91,7 +92,7 @@ BatchRenderer::BatchRenderer(int vertex_capacity) {
 
     m_pip = sg_make_pipeline(pdesc);
 
-    m_vertices = new Vertex[vertex_capacity];
+    m_vertices = new Vertex[vertex_capacity]{};
     m_vertex_count = 0;
     m_vertex_capacity = vertex_capacity;
 }
@@ -171,6 +172,15 @@ void BatchRenderer::push(Vertex vertex) {
     }
 
     m_vertices[m_vertex_count++] = vertex;
+}
+
+void BatchRenderer::push(Vertex *vertices, int n) {
+    if (m_vertex_count + n > m_vertex_capacity) {
+        flush();
+    }
+
+    memcpy(m_vertices + m_vertex_count, vertices, sizeof(Vertex) * n);
+    m_vertex_count += n;
 }
 
 void BatchRenderer::mvp(Matrix mat) {

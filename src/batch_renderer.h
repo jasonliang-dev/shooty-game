@@ -28,6 +28,7 @@ struct BatchRenderer {
 
     void flush();
     void push(Vertex vertex);
+    void push(Vertex *vertices, int n);
     void mvp(Matrix mat);
     void texture(sg_image tex);
 

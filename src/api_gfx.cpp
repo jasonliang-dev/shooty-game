@@ -103,14 +103,11 @@ static int make_font(lua_State *L) {
 
     lua_createtable(L, 0, 3);
 
-    Font *font = new Font(filename, size);
-    // printf("%p\n", (void *)font);
-    lua_pushlightuserdata(L, font);
+    lua_pushlightuserdata(L, new Font(filename, size));
     lua_setfield(L, -2, "udata");
 
     lua_pushcfunction(L, [](lua_State *L) -> int {
         Font *font = (Font *)luax::field_touserdata(L, 1, "udata");
-        // printf("%p\n", (void *)font);
 
         const char *text = luaL_checkstring(L, 2);
         float x = (float)luaL_checknumber(L, 3);
@@ -143,6 +140,71 @@ static int make_font(lua_State *L) {
     return 1;
 }
 
+static int make_vertex_array(lua_State *L) {
+    int count = (int)luaL_checkinteger(L, 1);
+
+    lua_createtable(L, 0, 4);
+
+    lua_pushlightuserdata(L, new Vertex[count]{});
+    lua_setfield(L, -2, "udata");
+
+    lua_pushcfunction(L, [](lua_State *L) -> int {
+        Vertex *vertices = (Vertex *)luax::field_touserdata(L, 1, "udata");
+        int index = (int)luaL_checkinteger(L, 2);
+
+        float x = (float)luaL_checknumber(L, 3);
+        float y = (float)luaL_checknumber(L, 4);
+        float z = (float)luaL_checknumber(L, 5);
+        float u = (float)luaL_optnumber(L, 6, 0);
+        float v = (float)luaL_optnumber(L, 7, 0);
+        unsigned char r = (unsigned char)luaL_optinteger(L, 8, 255);
+        unsigned char g = (unsigned char)luaL_optinteger(L, 9, 255);
+        unsigned char b = (unsigned char)luaL_optinteger(L, 10, 255);
+        unsigned char a = (unsigned char)luaL_optinteger(L, 11, 255);
+        unsigned char fr = (unsigned char)luaL_optinteger(L, 12, 0);
+        unsigned char fg = (unsigned char)luaL_optinteger(L, 13, 0);
+        unsigned char fb = (unsigned char)luaL_optinteger(L, 14, 0);
+        unsigned char fa = (unsigned char)luaL_optinteger(L, 15, 0);
+
+        vertices[index - 1].pos[0] = x;
+        vertices[index - 1].pos[1] = y;
+        vertices[index - 1].pos[2] = z;
+        vertices[index - 1].uv[0] = u;
+        vertices[index - 1].uv[1] = v;
+        vertices[index - 1].color[0] = r;
+        vertices[index - 1].color[1] = g;
+        vertices[index - 1].color[2] = b;
+        vertices[index - 1].color[3] = a;
+        vertices[index - 1].fog[0] = fr;
+        vertices[index - 1].fog[1] = fg;
+        vertices[index - 1].fog[2] = fb;
+        vertices[index - 1].fog[3] = fa;
+
+        return 0;
+    });
+    lua_setfield(L, -2, "write_at");
+
+    lua_pushcfunction(L, [](lua_State *L) -> int {
+        Vertex *vertices = (Vertex *)luax::field_touserdata(L, 1, "udata");
+        int length = (int)luaL_checkinteger(L, 2);
+        state->batch.push(vertices, length);
+
+        return 0;
+    });
+    lua_setfield(L, -2, "draw");
+
+    lua_createtable(L, 0, 1);
+    lua_pushcfunction(L, [](lua_State *L) -> int {
+        Vertex *vertices = (Vertex *)luax::field_touserdata(L, 1, "udata");
+        delete[] vertices;
+        return 0;
+    });
+    lua_setfield(L, -2, "__gc");
+    lua_setmetatable(L, -2);
+
+    return 1;
+}
+
 int lib(lua_State *L) {
     const luaL_Reg libs[] = {
         {"bind_mvp", bind_mvp},
@@ -151,6 +213,7 @@ int lib(lua_State *L) {
         {"v3_t2", v3_t2},
         {"make_texture", make_texture},
         {"make_font", make_font},
+        {"make_vertex_array", make_vertex_array},
         {nullptr, nullptr},
     };
 

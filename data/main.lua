@@ -11,6 +11,7 @@ function core.init()
     plants = assert(Atlas "data/content/plants.rtpa")
     map = assert(Tilemap "data/content/map.json")
     font = assert(gfx.make_font("data/content/times.ttf", 32))
+    fnt_small = assert(gfx.make_font("data/content/times.ttf", 20))
 
     player = {
         x = 3,
@@ -43,25 +44,11 @@ function core.frame(dt)
 
     player.sprite:update(dt)
 
-    gfx.bind_mvp(mat.ortho(0, sys.window_width(), sys.window_height(), 0, -1, 1))
-    font:print("Hello World", 100, 100)
-
     local view = mat.mul(mat.translate(-5, -10, -20), mat.rotate(1, 0, 0, math.pi / 4))
     local projection = mat.perspective(math.pi / 4, sys.window_width() / sys.window_height(), 0.05, 1000)
     gfx.bind_mvp(mat.mul(view, projection))
 
-    gfx.bind_texture(map.texture.id)
-    for _, t in pairs(map.tiles) do
-        local x1 = t.x
-        local y1 = t.y
-        local x2 = t.x + 1
-        local y2 = t.y + 1
-
-        gfx.v3_t2(x1, 0, y1, t.u1, t.v1)
-        gfx.v3_t2(x1, 0, y2, t.u1, t.v2)
-        gfx.v3_t2(x2, 0, y2, t.u2, t.v2)
-        gfx.v3_t2(x2, 0, y1, t.u2, t.v1)
-    end
+    map:draw()
 
     local x1 = player.x
     local y1 = 1
@@ -97,4 +84,8 @@ function core.frame(dt)
     gfx.v3_t2(x1, y2, z2 + 1, uv.u1, uv.v2)
     gfx.v3_t2(x2, y2, z2 + 0, uv.u2, uv.v2)
     gfx.v3_t2(x2, y1, z1 + 0, uv.u2, uv.v1)
+
+    gfx.bind_mvp(mat.ortho(0, sys.window_width(), sys.window_height(), 0, -1, 1))
+    fnt_small:print(string.format("FPS: %.2f", 1 / dt), 10, 20)
+    font:print("Hello World", 100, 100)
 end

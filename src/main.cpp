@@ -31,7 +31,7 @@ State *state; // extern state.h
 void init(void) {
     sg_setup({.context = sapp_sgcontext()});
     stm_setup();
-    state = new State;
+    state = new State{};
 
     lua_State *L = state->lua = luaL_newstate();
     luaL_openlibs(L);
