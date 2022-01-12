@@ -1,11 +1,10 @@
 local json = require "deps.json"
+local class = require "class"
 
-local tilemap = {}
+local Tilemap = class()
 
-function tilemap.load(filename)
-    local map = {
-        tiles = {}
-    }
+function Tilemap:new(filename)
+    self.tiles = {}
 
     local handle = assert(io.open(filename))
     local export = json.decode(handle:read "*a")
@@ -15,7 +14,7 @@ function tilemap.load(filename)
 
     local path = filename:match "(.*/)"
     local image = tileset.image
-    map.texture = gfx.make_texture(path .. image)
+    self.texture = gfx.make_texture(path .. image)
 
     for _, layer in ipairs(export.layers) do
         if layer.type ~= "tilelayer" then
@@ -29,7 +28,7 @@ function tilemap.load(filename)
                     goto next_tile
                 end
 
-                -- TODO: unset flags
+                -- unset flags?
                 local id = index - tileset.firstgid
 
                 local atlas_x = id % tileset.columns
@@ -37,7 +36,7 @@ function tilemap.load(filename)
 
                 local inset = 0.003
 
-                table.insert(map.tiles, {
+                table.insert(self.tiles, {
                     x = x,
                     y = y,
                     u1 = inset + (tileset.margin + (atlas_x * tileset.spacing) + (atlas_x * export.tilewidth)) / tileset.imagewidth,
@@ -53,11 +52,10 @@ function tilemap.load(filename)
         ::next_layer::
     end
 
-    map.width = export.width
-    map.height = export.height
+    self.width = export.width
+    self.height = export.height
 
     handle:close()
-    return map
 end
 
-return tilemap
+return Tilemap

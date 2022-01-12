@@ -1,15 +1,29 @@
 local mat = require "mat"
-local rtpa = require "rtpa"
-local tilemap = require "tilemap"
+local Atlas = require "rtpa"
+local Tilemap = require "tilemap"
+local Sprite = require "sprite"
 local keyboard = require "keyboard"
 
-function core.init()
-    player = {x = 3, z = 3}
+local lume = require "deps.lume"
 
-    characters = assert(rtpa.load "data/content/characters.rtpa")
-    plants = assert(rtpa.load "data/content/plants.rtpa")
-    map = assert(tilemap.load "data/content/map.json")
+function core.init()
+    characters = assert(Atlas "data/content/characters.rtpa")
+    plants = assert(Atlas "data/content/plants.rtpa")
+    map = assert(Tilemap "data/content/map.json")
     font = assert(gfx.make_font("data/content/times.ttf", 32))
+
+    player = {
+        x = 3,
+        z = 3,
+        sprite = Sprite {
+            texture = characters,
+            ms_per_frame = 150,
+            uvs = {
+                characters:uv "character_0000",
+                characters:uv "character_0001",
+            }
+        }
+    }
 end
 
 function core.event(type, ...)
@@ -26,6 +40,8 @@ function core.frame(dt)
     if keyboard.down "s" then player.z = player.z + spd end
     if keyboard.down "a" then player.x = player.x - spd end
     if keyboard.down "d" then player.x = player.x + spd end
+
+    player.sprite:update(dt)
 
     gfx.bind_mvp(mat.ortho(0, sys.window_width(), sys.window_height(), 0, -1, 1))
     font:print("Hello World", 100, 100)
@@ -54,7 +70,7 @@ function core.frame(dt)
     local y2 = 0
     local z2 = player.z
 
-    local uv = characters:uv "character_0000"
+    local uv = player.sprite:uv()
     gfx.bind_texture(characters.texture.id)
     gfx.v3_t2(x1, y1, z1, uv.u1, uv.v1)
     gfx.v3_t2(x1, y2, z2, uv.u1, uv.v2)
