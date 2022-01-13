@@ -2,12 +2,13 @@
 
 #include "font.h"
 #include "deps/sokol_gl.h"
+#include "ints.h"
 #include "io.h"
 #include <stdio.h>
 #include <string.h>
 
 Font::Font(const char *filename, float size) {
-    const auto read_file = [](const char *filename) -> unsigned char * {
+    const auto read_file = [](const char *filename) -> u8 * {
         FILE *handle = fopen(filename, "rb");
         if (!handle) {
             return nullptr;
@@ -17,13 +18,13 @@ Font::Font(const char *filename, float size) {
         int size = ftell(handle);
         fseek(handle, 0, SEEK_SET);
 
-        unsigned char *data = new unsigned char[size];
+        u8 *data = new u8[size];
         fread(data, 1, size, handle);
         fclose(handle);
         return data;
     };
 
-    unsigned char *ttf = read_file(filename);
+    u8 *ttf = read_file(filename);
     int ok = stbtt_InitFont(&m_info, ttf, 0);
     if (!ok) {
         return;
@@ -31,7 +32,7 @@ Font::Font(const char *filename, float size) {
 
     const int width = 1024;
     const int height = 1024;
-    unsigned char *bitmap = new unsigned char[width * height];
+    u8 *bitmap = new u8[width * height];
 
     stbtt_pack_context spc{};
     stbtt_PackBegin(&spc, bitmap, width, height, 0, 2, nullptr);
@@ -50,7 +51,7 @@ Font::Font(const char *filename, float size) {
 
     m_info.data = nullptr;
 
-    unsigned char *rgba = new unsigned char[width * height * 4];
+    u8 *rgba = new u8[width * height * 4];
     for (int i = 0; i < width * height; i++) {
         rgba[i * 4 + 0] = 255;
         rgba[i * 4 + 1] = 255;
@@ -138,15 +139,15 @@ float Font::print(BatchRenderer &batch, const PrintDesc &desc) const {
         y += m_size / 2;
     }
 
-    unsigned char r = desc.color[0];
-    unsigned char g = desc.color[1];
-    unsigned char b = desc.color[2];
-    unsigned char a = desc.color[3];
+    u8 r = desc.color[0];
+    u8 g = desc.color[1];
+    u8 b = desc.color[2];
+    u8 a = desc.color[3];
     batch.texture(m_texture);
     while (*text) {
         stbtt_aligned_quad q{};
-        stbtt_GetPackedQuad(m_ascii, m_texture_width, m_texture_height,
-                            *text, &x, &y, &q, 0);
+        stbtt_GetPackedQuad(m_ascii, m_texture_width, m_texture_height, *text,
+                            &x, &y, &q, 0);
         batch.push({{q.x0, q.y0, 0}, {q.s0, q.t0}, {r, g, b, a}, {}});
         batch.push({{q.x0, q.y1, 0}, {q.s0, q.t1}, {r, g, b, a}, {}});
         batch.push({{q.x1, q.y1, 0}, {q.s1, q.t1}, {r, g, b, a}, {}});

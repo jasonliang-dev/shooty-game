@@ -1,30 +1,17 @@
+local rooms = require "rooms"
 local mat = require "mat"
-local Atlas = require "rtpa"
-local Tilemap = require "tilemap"
-local Sprite = require "sprite"
 local keyboard = require "keyboard"
-
-local lume = require "deps.lume"
+local Atlas = require "atlas"
+local Tilemap = require "tilemap"
 
 function core.init()
-    characters = assert(Atlas "data/content/characters.rtpa")
-    plants = assert(Atlas "data/content/plants.rtpa")
-    map = assert(Tilemap "data/content/map.json")
-    font = assert(gfx.make_font("data/content/times.ttf", 32))
+    atl_characters = assert(Atlas "data/content/characters.rtpa")
+    atl_plants = assert(Atlas "data/content/plants.rtpa")
+    map_test = assert(Tilemap "data/content/map.json")
+    fnt_normal = assert(gfx.make_font("data/content/times.ttf", 32))
     fnt_small = assert(gfx.make_font("data/content/times.ttf", 20))
 
-    player = {
-        x = 3,
-        z = 3,
-        sprite = Sprite {
-            texture = characters,
-            ms_per_frame = 150,
-            uvs = {
-                characters:uv "character_0000",
-                characters:uv "character_0001",
-            }
-        }
-    }
+    rooms.start "test"
 end
 
 function core.event(type, ...)
@@ -36,56 +23,15 @@ function core.event(type, ...)
 end
 
 function core.frame(dt)
-    local spd = dt * 4
-    if keyboard.down "w" then player.z = player.z - spd end
-    if keyboard.down "s" then player.z = player.z + spd end
-    if keyboard.down "a" then player.x = player.x - spd end
-    if keyboard.down "d" then player.x = player.x + spd end
+    rooms.current:update(dt)
 
-    player.sprite:update(dt)
-
-    local view = mat.mul(mat.translate(-5, -10, -20), mat.rotate(1, 0, 0, math.pi / 4))
-    local projection = mat.perspective(math.pi / 4, sys.window_width() / sys.window_height(), 0.05, 1000)
-    gfx.bind_mvp(mat.mul(view, projection))
-
-    map:draw()
-
-    local x1 = player.x
-    local y1 = 1
-    local z1 = player.z - 0.5
-    local x2 = player.x + 1
-    local y2 = 0
-    local z2 = player.z
-
-    local uv = player.sprite:uv()
-    gfx.bind_texture(characters.texture.id)
-    gfx.v3_t2(x1, y1, z1, uv.u1, uv.v1)
-    gfx.v3_t2(x1, y2, z2, uv.u1, uv.v2)
-    gfx.v3_t2(x2, y2, z2, uv.u2, uv.v2)
-    gfx.v3_t2(x2, y1, z1, uv.u2, uv.v1)
-
-    local plant = {x = 5, z = 4}
-
-    local x1 = plant.x
-    local y1 = 1
-    local z1 = plant.z - 0.5
-    local x2 = plant.x + 1
-    local y2 = 0
-    local z2 = plant.z
-
-    local uv = plants:uv "tile_0124"
-    gfx.bind_texture(plants.texture.id)
-    gfx.v3_t2(x1, y1, z1 + 0, uv.u1, uv.v1)
-    gfx.v3_t2(x1, y2, z2 + 0, uv.u1, uv.v2)
-    gfx.v3_t2(x2, y2, z2 + 1, uv.u2, uv.v2)
-    gfx.v3_t2(x2, y1, z1 + 1, uv.u2, uv.v1)
-
-    gfx.v3_t2(x1, y1, z1 + 1, uv.u1, uv.v1)
-    gfx.v3_t2(x1, y2, z2 + 1, uv.u1, uv.v2)
-    gfx.v3_t2(x2, y2, z2 + 0, uv.u2, uv.v2)
-    gfx.v3_t2(x2, y1, z1 + 0, uv.u2, uv.v1)
+    gfx.begin_draw()
+    rooms.current:draw()
 
     gfx.bind_mvp(mat.ortho(0, sys.window_width(), sys.window_height(), 0, -1, 1))
     fnt_small:print(string.format("FPS: %.2f", 1 / dt), 10, 20)
-    font:print("Hello World", 100, 100)
+
+    gfx.end_draw()
+
+    rooms.transition()
 end

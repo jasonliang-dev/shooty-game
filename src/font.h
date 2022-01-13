@@ -6,7 +6,7 @@
 #include "deps/stb_truetype.h"
 
 namespace FontAlign {
-enum : unsigned char {
+enum : u8 {
     left = 1 << 0,
     right = 1 << 1,
     center = 1 << 2,
@@ -35,8 +35,8 @@ struct Font {
         const char *text;
         float x;
         float y;
-        unsigned char color[4];
-        unsigned char alignment;
+        u8 color[4];
+        u8 alignment;
     };
 
     float print(BatchRenderer &batch, const PrintDesc &desc) const;

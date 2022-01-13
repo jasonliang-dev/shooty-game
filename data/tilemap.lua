@@ -3,11 +3,6 @@ local class = require "class"
 
 local Tilemap = class()
 
-local function count_tiles(data)
-
-    return sum
-end
-
 function Tilemap:new(filename)
     local handle = assert(io.open(filename))
     local export = json.decode(handle:read "*a")

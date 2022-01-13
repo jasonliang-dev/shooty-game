@@ -76,7 +76,7 @@ void init(void) {
 
     state->batch = 6000;
 
-    unsigned char rgba[4] = {255, 255, 255, 255};
+    u8 rgba[4] = {255, 255, 255, 255};
     sg_image_data image_data{};
     image_data.subimage[0][0] = SG_RANGE(rgba);
     state->white = sg_make_image({
@@ -122,11 +122,9 @@ void event(const sapp_event *e) {
 }
 
 void frame(void) {
-    unsigned long long now = stm_now();
+    u64 now = stm_now();
     float dt = stm_diff(now, state->time_now) / 1000000000.0f;
     state->time_now = now;
-
-    sg_begin_default_pass(sg_pass_action{}, sapp_width(), sapp_height());
 
     lua_State *L = state->lua;
 
@@ -136,10 +134,6 @@ void frame(void) {
     lua_remove(L, -2);
     lua_pushnumber(L, dt);
     assert(lua_pcall(L, 1, 0, 1) == LUA_OK);
-
-    state->batch.flush();
-    sg_end_pass();
-    sg_commit();
 }
 
 void cleanup(void) {

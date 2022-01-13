@@ -8,7 +8,7 @@ struct State {
     BatchRenderer batch;
     sg_image white;
     lua_State *lua;
-    unsigned long long time_now;
+    u64 time_now;
 };
 
 extern State *state;

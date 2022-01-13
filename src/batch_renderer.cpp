@@ -1,4 +1,5 @@
 #include "batch_renderer.h"
+#include "ints.h"
 #include <string.h>
 
 BatchRenderer::BatchRenderer(int vertex_capacity) {
@@ -8,8 +9,8 @@ BatchRenderer::BatchRenderer(int vertex_capacity) {
         .usage = SG_USAGE_STREAM,
     });
 
-    unsigned short *indices = new unsigned short[vertex_capacity * 6 / 4]{};
-    unsigned short stride = 0;
+    u16 *indices = new u16[vertex_capacity * 6 / 4]{};
+    u16 stride = 0;
     for (int i = 0; i < vertex_capacity * 6 / 4; i += 6) {
         indices[i + 0] = stride + 0;
         indices[i + 1] = stride + 1;
@@ -25,8 +26,7 @@ BatchRenderer::BatchRenderer(int vertex_capacity) {
     m_ibo = sg_make_buffer({
         .type = SG_BUFFERTYPE_INDEXBUFFER,
         .usage = SG_USAGE_IMMUTABLE,
-        .data = {.ptr = indices,
-                 .size = sizeof(unsigned short) * vertex_capacity * 6 / 4},
+        .data = {.ptr = indices, .size = sizeof(u16) * vertex_capacity * 6 / 4},
     });
 
     delete[] indices;

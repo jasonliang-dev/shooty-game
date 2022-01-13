@@ -1,12 +1,13 @@
 #pragma once
 
 #include "deps/sokol_gfx.h"
+#include "ints.h"
 
 struct Vertex {
     float pos[3];
     float uv[2];
-    unsigned char color[4];
-    unsigned char fog[4];
+    u8 color[4];
+    u8 fog[4];
 };
 
 union Matrix {

@@ -1,4 +1,5 @@
 #include "api.h"
+#include "deps/sokol_app.h"
 #include "deps/sokol_gfx.h"
 #include "deps/stb_image.h"
 #include "font.h"
@@ -8,6 +9,18 @@
 #include <string.h>
 
 namespace gfx {
+
+static int begin_draw(lua_State *L) {
+    sg_begin_default_pass(sg_pass_action{}, sapp_width(), sapp_height());
+    return 0;
+}
+
+static int end_draw(lua_State *L) {
+    state->batch.flush();
+    sg_end_pass();
+    sg_commit();
+    return 0;
+}
 
 static int bind_mvp(lua_State *L) {
     Matrix m{};
@@ -29,7 +42,7 @@ static int bind_white_texture(lua_State *L) {
 }
 
 static int bind_texture(lua_State *L) {
-    unsigned int id = (unsigned int)luaL_checkinteger(L, 1);
+    u32 id = (u32)luaL_checkinteger(L, 1);
     state->batch.texture({id});
     return 0;
 }
@@ -87,7 +100,7 @@ static int make_texture(lua_State *L) {
 
     lua_createtable(L, 0, 1);
     lua_pushcfunction(L, [](lua_State *L) -> int {
-        unsigned int id = (unsigned int)luax::field_checkinteger(L, 1, "id");
+        u32 id = (u32)luax::field_checkinteger(L, 1, "id");
         sg_destroy_image(sg_image{id});
         return 0;
     });
@@ -114,11 +127,11 @@ static int make_font(lua_State *L) {
         float y = (float)luaL_checknumber(L, 4);
 
         // can't brace initialize?
-        Font::PrintDesc desc;
+        Font::PrintDesc desc{};
         desc.text = text;
         desc.x = x;
         desc.y = y;
-        memset(desc.color, 255, sizeof(unsigned char) * 4);
+        memset(desc.color, 255, sizeof(u8) * 4);
         desc.alignment = FontAlign::left | FontAlign::bottom;
 
         float n = font->print(state->batch, desc);
@@ -157,14 +170,14 @@ static int make_vertex_array(lua_State *L) {
         float z = (float)luaL_checknumber(L, 5);
         float u = (float)luaL_optnumber(L, 6, 0);
         float v = (float)luaL_optnumber(L, 7, 0);
-        unsigned char r = (unsigned char)luaL_optinteger(L, 8, 255);
-        unsigned char g = (unsigned char)luaL_optinteger(L, 9, 255);
-        unsigned char b = (unsigned char)luaL_optinteger(L, 10, 255);
-        unsigned char a = (unsigned char)luaL_optinteger(L, 11, 255);
-        unsigned char fr = (unsigned char)luaL_optinteger(L, 12, 0);
-        unsigned char fg = (unsigned char)luaL_optinteger(L, 13, 0);
-        unsigned char fb = (unsigned char)luaL_optinteger(L, 14, 0);
-        unsigned char fa = (unsigned char)luaL_optinteger(L, 15, 0);
+        u8 r = (u8)luaL_optinteger(L, 8, 255);
+        u8 g = (u8)luaL_optinteger(L, 9, 255);
+        u8 b = (u8)luaL_optinteger(L, 10, 255);
+        u8 a = (u8)luaL_optinteger(L, 11, 255);
+        u8 fr = (u8)luaL_optinteger(L, 12, 0);
+        u8 fg = (u8)luaL_optinteger(L, 13, 0);
+        u8 fb = (u8)luaL_optinteger(L, 14, 0);
+        u8 fa = (u8)luaL_optinteger(L, 15, 0);
 
         vertices[index - 1].pos[0] = x;
         vertices[index - 1].pos[1] = y;
@@ -188,7 +201,6 @@ static int make_vertex_array(lua_State *L) {
         Vertex *vertices = (Vertex *)luax::field_touserdata(L, 1, "udata");
         int length = (int)luaL_checkinteger(L, 2);
         state->batch.push(vertices, length);
-
         return 0;
     });
     lua_setfield(L, -2, "draw");
@@ -207,6 +219,8 @@ static int make_vertex_array(lua_State *L) {
 
 int lib(lua_State *L) {
     const luaL_Reg libs[] = {
+        {"begin_draw", begin_draw},
+        {"end_draw", end_draw},
         {"bind_mvp", bind_mvp},
         {"bind_white_texture", bind_white_texture},
         {"bind_texture", bind_texture},
