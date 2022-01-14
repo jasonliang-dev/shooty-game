@@ -34,4 +34,5 @@ function core.frame(dt)
     gfx.end_draw()
 
     rooms.transition()
+    keyboard.update()
 end

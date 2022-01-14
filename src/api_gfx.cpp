@@ -51,7 +51,6 @@ static int v3_t2(lua_State *L) {
     float x = (float)luaL_checknumber(L, 1);
     float y = (float)luaL_checknumber(L, 2);
     float z = (float)luaL_checknumber(L, 3);
-
     float u = (float)luaL_checknumber(L, 4);
     float v = (float)luaL_checknumber(L, 5);
 
@@ -60,6 +59,31 @@ static int v3_t2(lua_State *L) {
         .uv = {u, v},
         .color = {255, 255, 255, 255},
         .fog = {0, 0, 0, 0},
+    });
+
+    return 0;
+}
+
+static int v3_t2_c4_f4(lua_State *L) {
+    float x = (float)luaL_checknumber(L, 1);
+    float y = (float)luaL_checknumber(L, 2);
+    float z = (float)luaL_checknumber(L, 3);
+    float u = (float)luaL_optnumber(L, 4, 0);
+    float v = (float)luaL_optnumber(L, 5, 0);
+    u8 r = (u8)luaL_optinteger(L, 6, 255);
+    u8 g = (u8)luaL_optinteger(L, 7, 255);
+    u8 b = (u8)luaL_optinteger(L, 8, 255);
+    u8 a = (u8)luaL_optinteger(L, 9, 255);
+    u8 fr = (u8)luaL_optinteger(L, 10, 0);
+    u8 fg = (u8)luaL_optinteger(L, 11, 0);
+    u8 fb = (u8)luaL_optinteger(L, 12, 0);
+    u8 fa = (u8)luaL_optinteger(L, 13, 0);
+
+    state->batch.push({
+        .pos = {x, y, z},
+        .uv = {u, v},
+        .color = {r, g, b, a},
+        .fog = {fr, fg, fb, fa},
     });
 
     return 0;
@@ -225,6 +249,7 @@ int lib(lua_State *L) {
         {"bind_white_texture", bind_white_texture},
         {"bind_texture", bind_texture},
         {"v3_t2", v3_t2},
+        {"v3_t2_c4_f4", v3_t2_c4_f4},
         {"make_texture", make_texture},
         {"make_font", make_font},
         {"make_vertex_array", make_vertex_array},

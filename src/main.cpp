@@ -8,7 +8,9 @@
 
 #define SOKOL_IMPL
 #define SOKOL_GLCORE33
-#define SOKOL_WIN32_FORCE_MAIN
+#ifndef _NDEBUG
+    #define SOKOL_WIN32_FORCE_MAIN
+#endif
 #include "deps/sokol_app.h"
 #include "deps/sokol_gfx.h"
 #include "deps/sokol_glue.h"
@@ -156,6 +158,8 @@ sapp_desc sokol_main(int argc, char *argv[]) {
         .sample_count = 4,
         .window_title = "This is a title",
         .icon = {.sokol_default = true},
+#ifndef _NDEBUG
         .win32_console_attach = true,
+#endif
     };
 }

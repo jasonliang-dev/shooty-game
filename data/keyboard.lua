@@ -121,18 +121,41 @@ local translate_key = {
     ["menu"] = 348,
 }
 
-local keyboard = {}
+local keyboard = {
+    prev = {},
+    current = {},
+}
 
 function keyboard.on_keydown(keycode)
-    keyboard[keycode] = true
+    keyboard.current[keycode] = true
 end
 
 function keyboard.on_keyup(keycode)
-    keyboard[keycode] = nil
+    keyboard.current[keycode] = nil
 end
 
 function keyboard.down(key)
-    return keyboard[translate_key[key]]
+    return keyboard.current[translate_key[key]]
+end
+
+function keyboard.pressed(key)
+    local keycode = translate_key[key]
+    return not keyboard.prev[keycode] and keyboard.current[keycode]
+end
+
+function keyboard.released(key)
+    local keycode = translate_key[key]
+    return keyboard.prev[keycode] and not keyboard.current[keycode]
+end
+
+function keyboard.update()
+    for k in pairs(keyboard.prev) do
+        keyboard.prev[k] = nil
+    end
+
+    for k in pairs(keyboard.current) do
+        keyboard.prev[k] = true
+    end
 end
 
 return keyboard
