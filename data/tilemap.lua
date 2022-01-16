@@ -43,7 +43,7 @@ function Tilemap:new(filename)
                 local atlas_x = id % tileset.columns
                 local atlas_y = id // tileset.columns
 
-                local inset = 0.002
+                local inset = 0.004
 
                 local x1 = x
                 local y1 = y

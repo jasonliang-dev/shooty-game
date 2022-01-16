@@ -1,16 +1,28 @@
 local mat = require "mat"
 local keyboard = require "keyboard"
 local class = require "class"
+local lume = require "deps.lume"
+local vec3 = require "vec".vec3
 local Player = require "entities.player"
+local Plant = require "entities.plant"
+local EntityGroup = require "entity_group"
+local Camera = require "camera"
 
 local RoomTest = class()
 
 function RoomTest:new()
-    self.player = Player()
+    self.group = EntityGroup()
+    self.player = self.group:add(Player, 3, 3)
+    self.group:add(Plant, 5, 4, "tile_0124")
+    self.group:add(Plant, 8, 7, "tile_0124")
+
+    self.camera = Camera(self.player.x, 0, self.player.z, mat.rotate(1, 0, 0, math.pi / 6))
 end
 
 function RoomTest:update(dt)
-    self.player:update(dt)
+    self.group:update(dt)
+    self.camera:set_target(self.player.x + 0.5, 8, self.player.z + 13)
+    self.camera:update(dt)
 
     if keyboard.down "n" then
         self.rooms.go "test2"
@@ -18,33 +30,11 @@ function RoomTest:update(dt)
 end
 
 function RoomTest:draw()
-    local view = mat.mul(mat.translate(-5, -10, -20), mat.rotate(1, 0, 0, math.pi / 4))
     local projection = mat.perspective(math.pi / 4, sys.window_width() / sys.window_height(), 0.05, 1000)
-    gfx.bind_mvp(mat.mul(view, projection))
+    gfx.bind_mvp(mat.mul(self.camera:mat_view(), projection))
 
     map_test:draw()
-    self.player:draw()
-
-    local plant = {x = 5, z = 4}
-
-    local x1 = plant.x
-    local y1 = 1
-    local z1 = plant.z - 0.5
-    local x2 = plant.x + 1
-    local y2 = 0
-    local z2 = plant.z
-
-    local uv = atl_plants:uv "tile_0124"
-    gfx.bind_texture(atl_plants.texture.id)
-    gfx.v3_t2(x1, y1, z1 + 0, uv.u1, uv.v1)
-    gfx.v3_t2(x1, y2, z2 + 0, uv.u1, uv.v2)
-    gfx.v3_t2(x2, y2, z2 + 1, uv.u2, uv.v2)
-    gfx.v3_t2(x2, y1, z1 + 1, uv.u2, uv.v1)
-
-    gfx.v3_t2(x1, y1, z1 + 1, uv.u1, uv.v1)
-    gfx.v3_t2(x1, y2, z2 + 1, uv.u1, uv.v2)
-    gfx.v3_t2(x2, y2, z2 + 0, uv.u2, uv.v2)
-    gfx.v3_t2(x2, y1, z1 + 0, uv.u2, uv.v1)
+    self.group:draw()
 end
 
 return RoomTest

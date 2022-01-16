@@ -25,11 +25,13 @@ end
 function core.frame(dt)
     rooms.current:update(dt)
 
+    local draws_last_frame = gfx.draw_count()
     gfx.begin_draw()
     rooms.current:draw()
 
     gfx.bind_mvp(mat.ortho(0, sys.window_width(), sys.window_height(), 0, -1, 1))
     fnt_small:print(string.format("FPS: %.2f", 1 / dt), 10, 20)
+    fnt_small:print(string.format("Draws: %d", draws_last_frame), 10, 40)
 
     gfx.end_draw()
 

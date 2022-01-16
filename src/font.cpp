@@ -122,7 +122,7 @@ float Font::width(const char *text) const {
 
 float Font::height() const { return m_size; }
 
-float Font::print(BatchRenderer &batch, const PrintDesc &desc) const {
+float Font::print(Renderer &renderer, const PrintDesc &desc) const {
     const char *text = desc.text;
 
     float x = desc.x;
@@ -143,15 +143,15 @@ float Font::print(BatchRenderer &batch, const PrintDesc &desc) const {
     u8 g = desc.color[1];
     u8 b = desc.color[2];
     u8 a = desc.color[3];
-    batch.texture(m_texture);
+    renderer.texture(m_texture);
     while (*text) {
         stbtt_aligned_quad q{};
         stbtt_GetPackedQuad(m_ascii, m_texture_width, m_texture_height, *text,
                             &x, &y, &q, 0);
-        batch.push({{q.x0, q.y0, 0}, {q.s0, q.t0}, {r, g, b, a}, {}});
-        batch.push({{q.x0, q.y1, 0}, {q.s0, q.t1}, {r, g, b, a}, {}});
-        batch.push({{q.x1, q.y1, 0}, {q.s1, q.t1}, {r, g, b, a}, {}});
-        batch.push({{q.x1, q.y0, 0}, {q.s1, q.t0}, {r, g, b, a}, {}});
+        renderer.push({{q.x0, q.y0, 0}, {q.s0, q.t0}, {r, g, b, a}, {}});
+        renderer.push({{q.x0, q.y1, 0}, {q.s0, q.t1}, {r, g, b, a}, {}});
+        renderer.push({{q.x1, q.y1, 0}, {q.s1, q.t1}, {r, g, b, a}, {}});
+        renderer.push({{q.x1, q.y0, 0}, {q.s1, q.t0}, {r, g, b, a}, {}});
         text++;
     }
 

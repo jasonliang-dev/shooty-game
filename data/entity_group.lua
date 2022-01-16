@@ -34,7 +34,9 @@ function EntityGroup:update(dt)
 
     for id, entity in pairs(self.group_by_id) do
         if entity.dead then
-            entity:on_death()
+            if entity.on_death then
+                entity:on_death()
+            end
             self.group[id] = nil
         end
     end

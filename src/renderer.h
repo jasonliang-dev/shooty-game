@@ -15,23 +15,25 @@ union Matrix {
     float arr[16];
 };
 
-struct BatchRenderer {
-    BatchRenderer() = default;
-    BatchRenderer(int vertex_capacity);
+struct Renderer {
+    Renderer() = default;
+    Renderer(int vertex_capacity);
 
-    ~BatchRenderer();
+    ~Renderer();
 
-    BatchRenderer(const BatchRenderer &) = delete;
-    BatchRenderer &operator=(const BatchRenderer &) = delete;
+    Renderer(const Renderer &) = delete;
+    Renderer &operator=(const Renderer &) = delete;
 
-    BatchRenderer(BatchRenderer &&) noexcept;
-    BatchRenderer &operator=(BatchRenderer &&) noexcept;
+    Renderer(Renderer &&) noexcept;
+    Renderer &operator=(Renderer &&) noexcept;
 
+    void begin();
     void flush();
     void push(Vertex vertex);
     void push(Vertex *vertices, int n);
     void mvp(Matrix mat);
     void texture(sg_image tex);
+    int draw_count();
 
   private:
     sg_pipeline m_pip{};
@@ -45,4 +47,6 @@ struct BatchRenderer {
 
     Matrix u_mvp{};
     sg_image u_texture{};
+
+    int m_draw_count = 0;
 };

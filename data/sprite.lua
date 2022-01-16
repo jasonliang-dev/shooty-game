@@ -16,7 +16,7 @@ function Sprite:new(desc)
         end
     end
 
-    self.current_animation = desc.current_animation or next(self.animations)
+    self.current_animation = desc.initial
     self.elapsed = 0
 end
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "batch_renderer.h"
+#include "renderer.h"
 #include "deps/sokol_gfx.h"
 #include "deps/stb_rect_pack.h"
 #include "deps/stb_truetype.h"
@@ -39,7 +39,7 @@ struct Font {
         u8 alignment;
     };
 
-    float print(BatchRenderer &batch, const PrintDesc &desc) const;
+    float print(Renderer &renderer, const PrintDesc &desc) const;
 
   private:
     static constexpr int MAX_CHARS = 256;

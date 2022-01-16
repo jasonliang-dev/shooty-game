@@ -1,16 +1,11 @@
 #define LUA_LIB
 
 #include "api.h"
-#include "batch_renderer.h"
 #include "state.h"
-#include <assert.h>
-#include <stdlib.h>
 
 #define SOKOL_IMPL
 #define SOKOL_GLCORE33
-#ifndef _NDEBUG
-    #define SOKOL_WIN32_FORCE_MAIN
-#endif
+#define SOKOL_WIN32_FORCE_MAIN
 #include "deps/sokol_app.h"
 #include "deps/sokol_gfx.h"
 #include "deps/sokol_glue.h"
@@ -53,7 +48,10 @@ void init(void) {
                             "    print(debug.traceback(nil, 2))\n"
                             "    os.exit(-1)\n"
                             "end)\n";
-    assert(luaL_dostring(L, bootstrap) == LUA_OK);
+    if (luaL_dostring(L, bootstrap) != LUA_OK) {
+        fprintf(stderr, "lua bootstrap failed\n");
+        abort();
+    }
 
     lua_pushcfunction(L, [](lua_State *L) -> int {
         // print(tostring(err))
@@ -76,7 +74,7 @@ void init(void) {
         exit(-1);
     });
 
-    state->batch = 6000;
+    state->renderer = Renderer(6000);
 
     u8 rgba[4] = {255, 255, 255, 255};
     sg_image_data image_data{};
@@ -117,6 +115,25 @@ void event(const sapp_event *e) {
         lua_pcall(L, 2, 0, 1);
         break;
     }
+    case SAPP_EVENTTYPE_MOUSE_DOWN: {
+        lua_pushstring(L, "mousedown");
+        lua_pushinteger(L, e->mouse_button);
+        lua_pcall(L, 2, 0, 1);
+        break;
+    }
+    case SAPP_EVENTTYPE_MOUSE_UP: {
+        lua_pushstring(L, "mouseup");
+        lua_pushinteger(L, e->mouse_button);
+        lua_pcall(L, 2, 0, 1);
+        break;
+    }
+    case SAPP_EVENTTYPE_MOUSE_MOVE: {
+        lua_pushstring(L, "mousemove");
+        lua_pushinteger(L, e->mouse_dx);
+        lua_pushinteger(L, e->mouse_dy);
+        lua_pcall(L, 3, 0, 1);
+        break;
+    }
     default:
         lua_pop(L, 1);
         break;
@@ -135,7 +152,11 @@ void frame(void) {
     lua_getfield(L, -1, "frame");
     lua_remove(L, -2);
     lua_pushnumber(L, dt);
-    assert(lua_pcall(L, 1, 0, 1) == LUA_OK);
+
+    if (lua_pcall(L, 1, 0, 1) != LUA_OK) [[unlikely]] {
+        fprintf(stderr, "core.frame failed\n");
+        abort();
+    }
 }
 
 void cleanup(void) {
@@ -158,8 +179,6 @@ sapp_desc sokol_main(int argc, char *argv[]) {
         .sample_count = 4,
         .window_title = "This is a title",
         .icon = {.sokol_default = true},
-#ifndef _NDEBUG
         .win32_console_attach = true,
-#endif
     };
 }

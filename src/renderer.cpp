@@ -1,8 +1,9 @@
-#include "batch_renderer.h"
+#include "renderer.h"
 #include "ints.h"
 #include <string.h>
+#include <stdio.h>
 
-BatchRenderer::BatchRenderer(int vertex_capacity) {
+Renderer::Renderer(int vertex_capacity) {
     m_vbo = sg_make_buffer({
         .size = sizeof(Vertex) * vertex_capacity,
         .type = SG_BUFFERTYPE_VERTEXBUFFER,
@@ -97,14 +98,14 @@ BatchRenderer::BatchRenderer(int vertex_capacity) {
     m_vertex_capacity = vertex_capacity;
 }
 
-BatchRenderer::~BatchRenderer() {
+Renderer::~Renderer() {
     sg_destroy_pipeline(m_pip);
     sg_destroy_buffer(m_vbo);
     sg_destroy_buffer(m_ibo);
     delete m_vertices;
 }
 
-BatchRenderer::BatchRenderer(BatchRenderer &&other) noexcept {
+Renderer::Renderer(Renderer &&other) noexcept {
     m_pip = other.m_pip;
     m_vbo = other.m_vbo;
     m_ibo = other.m_ibo;
@@ -120,7 +121,7 @@ BatchRenderer::BatchRenderer(BatchRenderer &&other) noexcept {
     other.m_vertices = nullptr;
 }
 
-BatchRenderer &BatchRenderer::operator=(BatchRenderer &&other) noexcept {
+Renderer &Renderer::operator=(Renderer &&other) noexcept {
     if (this != &other) {
         sg_destroy_pipeline(m_pip);
         sg_destroy_buffer(m_vbo);
@@ -145,7 +146,11 @@ BatchRenderer &BatchRenderer::operator=(BatchRenderer &&other) noexcept {
     return *this;
 }
 
-void BatchRenderer::flush() {
+void Renderer::begin() {
+    m_draw_count = 0;
+}
+
+void Renderer::flush() {
     if (m_vertex_count == 0) {
         return;
     }
@@ -164,9 +169,10 @@ void BatchRenderer::flush() {
     sg_draw(0, m_vertex_count * 6 / 4, 1);
 
     m_vertex_count = 0;
+    m_draw_count++;
 }
 
-void BatchRenderer::push(Vertex vertex) {
+void Renderer::push(Vertex vertex) {
     if (m_vertex_count == m_vertex_capacity) {
         flush();
     }
@@ -174,7 +180,7 @@ void BatchRenderer::push(Vertex vertex) {
     m_vertices[m_vertex_count++] = vertex;
 }
 
-void BatchRenderer::push(Vertex *vertices, int n) {
+void Renderer::push(Vertex *vertices, int n) {
     if (m_vertex_count + n > m_vertex_capacity) {
         flush();
     }
@@ -183,14 +189,18 @@ void BatchRenderer::push(Vertex *vertices, int n) {
     m_vertex_count += n;
 }
 
-void BatchRenderer::mvp(Matrix mat) {
+void Renderer::mvp(Matrix mat) {
     flush();
     u_mvp = mat;
 }
 
-void BatchRenderer::texture(sg_image tex) {
+void Renderer::texture(sg_image tex) {
     if (u_texture.id != tex.id) {
         flush();
         u_texture = tex;
     }
+}
+
+int Renderer::draw_count() {
+    return m_draw_count;
 }
