@@ -3,14 +3,24 @@ local vec3 = require "vec".vec3
 local ray = {}
 
 function ray.from_screen(x, y, camera)
+    local xx = (2 * x) / sys.window_width() - 1
+    local yy = 1 - (2 * y) / sys.window_height()
 
+    local view_projection = camera:view_projection()
+    local vnear = vec3.unproject({x = xx, y = yy, z = 0}, view_projection)
+    local vfar = vec3.unproject({x = xx, y = yy, z = 1}, view_projection)
+
+    return {
+        origin = {x = camera.x, y = camera.y, z = camera.z},
+        direction = vec3.normalize(vec3.sub(vfar, vnear))
+    }
 end
 
 -- moller trumbore intersection algorithm
 -- https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
 function ray.vs_triangle(desc)
-    local origin = desc.origin
-    local direction = desc.direction
+    local origin = desc.ray.origin
+    local direction = desc.ray.direction
     local v1 = desc.v1
     local v2 = desc.v2
     local v3 = desc.v3
@@ -48,6 +58,26 @@ function ray.vs_triangle(desc)
         distance = t,
         point = vec3.add(origin, vec3.scale(direction, t))
     }
+end
+
+function ray.vs_quad(desc)
+    local raycast = ray.vs_triangle {
+        ray = desc.ray,
+        v1 = desc.v1,
+        v2 = desc.v2,
+        v3 = desc.v3,
+    }
+
+    if not raycast then
+        raycast = ray.vs_triangle {
+            ray = desc.ray,
+            v1 = desc.v1,
+            v2 = desc.v3,
+            v3 = desc.v4,
+        }
+    end
+
+    return raycast
 end
 
 return ray

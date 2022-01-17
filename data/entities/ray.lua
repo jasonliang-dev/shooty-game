@@ -8,7 +8,6 @@ local Ray = class()
 function Ray:new(desc)
     self.origin = desc.origin
     self.direction = desc.direction
-    self.collision = false
 end
 
 function Ray:update(dt)
@@ -18,21 +17,26 @@ function Ray:update(dt)
     if keyboard.down "right" then dx = dx + 1 end
     if keyboard.down "up" then dz = dz - 1 end
     if keyboard.down "down" then dz = dz + 1 end
-    dx, dz = vec2.normalize(dx, dz)
+    if dx ~= 0 or dz ~= 0 then
+        dx, dz = vec2.normalize(dx, dz)
+    end
 
     local spd = dt * 4
     self.origin.x = self.origin.x + dx * spd
     self.origin.z = self.origin.z + dz * spd
 
     local raycast = ray.vs_triangle {
-        origin = self.origin,
-        direction = self.direction,
+        ray = {origin = self.origin, direction = self.direction},
         v1 = {x = 1, y = 0, z = 1},
         v2 = {x = 1, y = 0, z = 9},
         v3 = {x = 9, y = 0, z = 1},
     }
 
-    self.collision = not not raycast
+    if raycast then
+        self.collision = raycast.point
+    else
+        self.collision = nil
+    end
 end
 
 function Ray:draw()
@@ -51,10 +55,22 @@ function Ray:draw()
     end
 
     gfx.bind_white_texture()
-    gfx.v3_t2_c4_f4(x1, y1, z1, 0, 0, r, g, b, a, 0, 0, 0, 0)
-    gfx.v3_t2_c4_f4(x1, y2, z2, 0, 0, r, g, b, a, 0, 0, 0, 0)
-    gfx.v3_t2_c4_f4(x2, y2, z2, 0, 0, r, g, b, a, 0, 0, 0, 0)
-    gfx.v3_t2_c4_f4(x2, y1, z1, 0, 0, r, g, b, a, 0, 0, 0, 0)
+    gfx.v3_t2_c4_f4(x1, y1, z1, 0, 0, 255, 255, 255, 255, 0, 0, 0, 0)
+    gfx.v3_t2_c4_f4(x1, y2, z2, 0, 0, 255, 255, 255, 255, 0, 0, 0, 0)
+    gfx.v3_t2_c4_f4(x2, y2, z2, 0, 0, 255, 255, 255, 255, 0, 0, 0, 0)
+    gfx.v3_t2_c4_f4(x2, y1, z1, 0, 0, 255, 255, 255, 255, 0, 0, 0, 0)
+
+    if self.collision then
+        x1 = self.collision.x
+        z1 = self.collision.z
+        x2 = self.collision.x + 0.1
+        z2 = self.collision.z + 0.1
+
+        gfx.v3_t2_c4_f4(x1, 0.01, z1, 0, 0, 0, 255, 0, 255, 0, 0, 0, 0)
+        gfx.v3_t2_c4_f4(x1, 0.01, z2, 0, 0, 0, 255, 0, 255, 0, 0, 0, 0)
+        gfx.v3_t2_c4_f4(x2, 0.01, z2, 0, 0, 0, 255, 0, 255, 0, 0, 0, 0)
+        gfx.v3_t2_c4_f4(x2, 0.01, z1, 0, 0, 0, 255, 0, 255, 0, 0, 0, 0)
+    end
 end
 
 return Ray

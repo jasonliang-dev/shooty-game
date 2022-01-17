@@ -75,7 +75,9 @@ function Player:fsm_walk(dt)
     if keyboard.down "s" then self.dz = self.dz + 1 end
     if keyboard.down "a" then self.dx = self.dx - 1 end
     if keyboard.down "d" then self.dx = self.dx + 1 end
-    self.dx, self.dz = vec2.normalize(self.dx, self.dz)
+    if self.dx ~= 0 or self.dz ~= 0 then
+        self.dx, self.dz = vec2.normalize(self.dx, self.dz)
+    end
 
     if self.dx == 0 and self.dz == 0 then
         self.fsm:transition "idle"

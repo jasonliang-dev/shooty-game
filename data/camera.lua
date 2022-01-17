@@ -40,8 +40,10 @@ function Camera:update(dt)
     self.z = lume.lerp(self.z, self.target.z, blend)
 end
 
-function Camera:mat_view()
-    return mat.mul(mat.translate(-self.x, -self.y, -self.z), self.mat_rot)
+function Camera:view_projection()
+    local view = mat.mul(mat.translate(-self.x, -self.y, -self.z), self.mat_rot)
+    local projection = mat.perspective(math.pi / 4, sys.window_width() / sys.window_height(), 0.05, 1000)
+    return mat.mul(view, projection)
 end
 
 return Camera
