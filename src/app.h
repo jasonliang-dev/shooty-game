@@ -1,8 +1,11 @@
 #pragma once
 
 #include "api.h"
-#include "renderer.h"
 #include "deps/sokol_gfx.h"
+#include "deps/sokol_app.h"
+#include "renderer.h"
+
+namespace app {
 
 struct State {
     Renderer renderer;
@@ -12,3 +15,10 @@ struct State {
 };
 
 extern State *state;
+
+void init();
+void event(const sapp_event *e);
+void frame();
+void cleanup();
+
+} // namespace app

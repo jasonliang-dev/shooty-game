@@ -3,7 +3,7 @@
 #include "deps/sokol_gfx.h"
 #include "deps/stb_image.h"
 #include "font.h"
-#include "state.h"
+#include "app.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -11,19 +11,19 @@ namespace gfx {
 
 static int begin_draw(lua_State *L) {
     sg_begin_default_pass(sg_pass_action{}, sapp_width(), sapp_height());
-    state->renderer.begin();
+    app::state->renderer.begin();
     return 0;
 }
 
 static int end_draw(lua_State *L) {
-    state->renderer.flush();
+    app::state->renderer.flush();
     sg_end_pass();
     sg_commit();
     return 0;
 }
 
 static int draw_count(lua_State *L) {
-    lua_pushnumber(L, state->renderer.draw_count());
+    lua_pushnumber(L, app::state->renderer.draw_count());
     return 1;
 }
 
@@ -36,19 +36,19 @@ static int bind_mvp(lua_State *L) {
         lua_pop(L, 1);
     }
 
-    state->renderer.mvp(m);
+    app::state->renderer.mvp(m);
     return 0;
 }
 
 static int bind_white_texture(lua_State *L) {
     (void)L;
-    state->renderer.texture(state->white);
+    app::state->renderer.texture(app::state->white);
     return 0;
 }
 
 static int bind_texture(lua_State *L) {
     u32 id = (u32)luaL_checkinteger(L, 1);
-    state->renderer.texture({id});
+    app::state->renderer.texture({id});
     return 0;
 }
 
@@ -59,7 +59,7 @@ static int v3_t2(lua_State *L) {
     float u = (float)luaL_checknumber(L, 4);
     float v = (float)luaL_checknumber(L, 5);
 
-    state->renderer.push({
+    app::state->renderer.push({
         .pos = {x, y, z},
         .uv = {u, v},
         .color = {255, 255, 255, 255},
@@ -84,7 +84,7 @@ static int v3_t2_c4_f4(lua_State *L) {
     u8 fb = (u8)luaL_optinteger(L, 12, 0);
     u8 fa = (u8)luaL_optinteger(L, 13, 0);
 
-    state->renderer.push({
+    app::state->renderer.push({
         .pos = {x, y, z},
         .uv = {u, v},
         .color = {r, g, b, a},
@@ -162,7 +162,7 @@ static int make_font(lua_State *L) {
         memset(desc.color, 255, sizeof(u8) * 4);
         desc.alignment = FontAlign::left | FontAlign::bottom;
 
-        float n = font->print(state->renderer, desc);
+        float n = font->print(app::state->renderer, desc);
 
         lua_pushnumber(L, n);
         return 1;
@@ -228,7 +228,7 @@ static int make_vertex_array(lua_State *L) {
     lua_pushcfunction(L, [](lua_State *L) -> int {
         Vertex *vertices = (Vertex *)luax::field_touserdata(L, 1, "udata");
         int length = (int)luaL_checkinteger(L, 2);
-        state->renderer.push(vertices, length);
+        app::state->renderer.push(vertices, length);
         return 0;
     });
     lua_setfield(L, -2, "draw");

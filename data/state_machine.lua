@@ -22,7 +22,7 @@ function StateMachine:transition(to)
     self.next_state = to
 end
 
-function StateMachine:dispatch(dt)
+function StateMachine:update(dt)
     if self.next_state then
         self.current_state = self.next_state
         self.next_state = nil

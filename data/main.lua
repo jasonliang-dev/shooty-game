@@ -1,10 +1,12 @@
 local rooms = require "rooms"
 local mat = require "mat"
 local keyboard = require "keyboard"
+local mouse = require "mouse"
 local Atlas = require "atlas"
 local Tilemap = require "tilemap"
 
 function core.init()
+    atl_atlas = assert(Atlas "data/content/atlas.rtpa")
     atl_characters = assert(Atlas "data/content/characters.rtpa")
     atl_plants = assert(Atlas "data/content/plants.rtpa")
     map_test = assert(Tilemap "data/content/map.json")
@@ -19,6 +21,12 @@ function core.event(type, ...)
         keyboard.on_keydown(...)
     elseif type == "keyup" then
         keyboard.on_keyup(...)
+    elseif type == "mousedown" then
+        mouse.on_mousedown(...)
+    elseif type == "mouseup" then
+        mouse.on_mouseup(...)
+    elseif type == "mousemove" then
+        mouse.on_mousemove(...)
     end
 end
 
@@ -37,4 +45,5 @@ function core.frame(dt)
 
     rooms.transition()
     keyboard.update()
+    mouse.update()
 end

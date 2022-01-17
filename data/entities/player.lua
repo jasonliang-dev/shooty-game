@@ -42,7 +42,7 @@ end
 
 function Player:update(dt)
     self.sprite:update(dt)
-    self.fsm:dispatch(dt)
+    self.fsm:update(dt)
 end
 
 function Player:fsm_enter_idle()

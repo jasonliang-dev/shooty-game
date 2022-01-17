@@ -18,8 +18,40 @@ function vec2.rotate(rad, x, y, ox, oy)
     return ox + rx, oy + ry
 end
 
-function vec3.unpack(tab)
-    return tab.x, tab.y, tab.z
+function vec3.add(a, b)
+    return {
+        x = a.x + b.x,
+        y = a.y + b.y,
+        z = a.z + b.z,
+    }
+end
+
+function vec3.sub(a, b)
+    return {
+        x = a.x - b.x,
+        y = a.y - b.y,
+        z = a.z - b.z,
+    }
+end
+
+function vec3.scale(v, n)
+    return {
+        x = v.x * n,
+        y = v.y * n,
+        z = v.z * n,
+    }
+end
+
+function vec3.cross(a, b)
+    return {
+        x = a.y * b.z - a.z * b.y,
+        y = a.z * b.x - a.x * b.z,
+        z = a.x * b.y - a.y * b.x,
+    }
+end
+
+function vec3.dot(a, b)
+    return a.x * b.x + a.y * b.y + a.z * b.z
 end
 
 return {

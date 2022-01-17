@@ -15,6 +15,7 @@ find_package(OpenGL REQUIRED)
 add_executable(${PROJECT_NAME}
     src/api_gfx.cpp
     src/api_sys.cpp
+    src/app.cpp
     src/font.cpp
     src/renderer.cpp
     src/main.cpp
