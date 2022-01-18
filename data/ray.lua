@@ -6,9 +6,9 @@ function ray.from_screen(x, y, camera)
     local xx = (2 * x) / sys.window_width() - 1
     local yy = 1 - (2 * y) / sys.window_height()
 
-    local view_projection = camera:view_projection()
-    local vnear = vec3.unproject({x = xx, y = yy, z = 0}, view_projection)
-    local vfar = vec3.unproject({x = xx, y = yy, z = 1}, view_projection)
+    local projection = camera:view_projection()
+    local vnear = vec3.unproject({x = xx, y = yy, z = 0}, projection)
+    local vfar = vec3.unproject({x = xx, y = yy, z = 1}, projection)
 
     return {
         origin = {x = camera.x, y = camera.y, z = camera.z},

@@ -6,9 +6,8 @@ local Atlas = require "atlas"
 local Tilemap = require "tilemap"
 
 function core.init()
-    atl_atlas = assert(Atlas "data/content/atlas.rtpa")
-    atl_characters = assert(Atlas "data/content/characters.rtpa")
-    atl_plants = assert(Atlas "data/content/plants.rtpa")
+    atl_tiles = assert(Atlas "data/content/tiles.rtpa")
+    atl_entities = assert(Atlas "data/content/entities.rtpa")
     map_test = assert(Tilemap "data/content/map.json")
     fnt_normal = assert(gfx.make_font("data/content/times.ttf", 32))
     fnt_small = assert(gfx.make_font("data/content/times.ttf", 20))

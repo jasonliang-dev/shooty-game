@@ -1,14 +1,18 @@
 local class = require "class"
 local keyboard = require "keyboard"
+local mouse = require "mouse"
 local vec2 = require "vec".vec2
 local lume = require "deps.lume"
+local ray = require "ray"
 local Sprite = require "sprite"
+local Bullet = require "entities.bullet"
 local StateMachine = require "state_machine"
-local Deque = require "deque"
 
 local Player = class()
 
-function Player:new(x, z)
+function Player:new(x, z, camera)
+    self.camera = camera
+
     self.x = x
     self.z = z
     self.dx = 0
@@ -18,12 +22,12 @@ function Player:new(x, z)
     self.facing_right = false
 
     self.sprite = Sprite {
-        atlas = atl_characters,
+        atlas = atl_entities,
         initial = "idle",
         animations = {
-            idle = {ms_per_frame = 110, frames = {"character_0000"}},
-            walk = {ms_per_frame = 110, frames = {"character_0001", "character_0000"}},
-            dash = {ms_per_frame = 40, frames = {"character_0001"}},
+            idle = {ms_per_frame = 110, frames = {"char1_1"}},
+            walk = {ms_per_frame = 110, frames = {"char1_2", "char1_1"}},
+            dash = {ms_per_frame = 40, frames = {"char1_1"}},
         },
     }
 
@@ -36,13 +40,33 @@ function Player:new(x, z)
             dash = {enter = self.fsm_enter_dash, update = self.fsm_dash, leave = self.fsm_leave_dash},
         },
     }
-
-    self.ghosts = Deque()
 end
 
 function Player:update(dt)
     self.sprite:update(dt)
     self.fsm:update(dt)
+
+    local state = self.fsm.current_state
+    if state == "idle" or state == "walk" then
+        local raycast = ray.vs_quad {
+            ray = ray.from_screen(mouse.x, mouse.y, self.camera),
+            v1 = {x = -50, y = 0, z = -50},
+            v2 = {x = -50, y = 0, z = 50},
+            v3 = {x = 50, y = 0, z = 50},
+            v4 = {x = 50, y = 0, z = -50},
+        }
+
+        if raycast then
+            self.facing_right = raycast.point.x > self.x
+
+            if mouse.clicked "left" then
+                local dx = raycast.point.x - self.x
+                local dz = raycast.point.z - self.z
+                dx, dz = vec2.normalize(dx, dz)
+                self.group:add(Bullet, self.x, self.z, dx, dz)
+            end
+        end
+    end
 end
 
 function Player:fsm_enter_idle()
@@ -85,12 +109,6 @@ function Player:fsm_walk(dt)
         self.fsm:transition "dash"
     end
 
-    if self.dx > 0 then
-        self.facing_right = true
-    elseif self.dx < 0 then
-        self.facing_right = false
-    end
-
     self.x = self.x + self.dx * spd
     self.z = self.z + self.dz * spd
 end
@@ -116,17 +134,26 @@ end
 
 function Player:draw()
     local rad = lume.lerp(math.pi * 2, 0, self.dash_time / self.dash_time_init)
-    if self.facing_right then
+    if self.dx > 0 then
         rad = -rad
     end
 
-    local x1, y1 = vec2.rotate(rad, self.x + 0, 1.2, self.x + 0.5, 0.6)
-    local x2, y2 = vec2.rotate(rad, self.x + 0, 0.0, self.x + 0.5, 0.6)
-    local x3, y3 = vec2.rotate(rad, self.x + 1, 0.0, self.x + 0.5, 0.6)
-    local x4, y4 = vec2.rotate(rad, self.x + 1, 1.2, self.x + 0.5, 0.6)
+    local x1, y1, z1, x2, y2, z2, x3, y3, z3, x4, y4, z4
+    if self.dx ~= 0 then
+        x1, y1 = vec2.rotate(rad, self.x - 0.5, 1.2, self.x, 0.6)
+        x2, y2 = vec2.rotate(rad, self.x - 0.5, 0.0, self.x, 0.6)
+        x3, y3 = vec2.rotate(rad, self.x + 0.5, 0.0, self.x, 0.6)
+        x4, y4 = vec2.rotate(rad, self.x + 0.5, 1.2, self.x, 0.6)
+        z1, z2 = self.z, self.z, self.z, self.z
+    else
+        x1, x2 = self.x - 0.5, self.x - 0.5
+        x3, x4 = self.x + 0.5, self.x + 0.5
 
-    local z1 = self.z
-    local z2 = self.z
+        y1, z1 = vec2.rotate(rad, 1.2, self.z, 0.6, self.z)
+        y2, z2 = vec2.rotate(rad, 0.0, self.z, 0.6, self.z)
+        y3, z3 = y2, z2
+        y4, z4 = y1, z1
+    end
 
     local uv = self.sprite:uv()
     local u1 = self.facing_right and uv.u2 or uv.u1

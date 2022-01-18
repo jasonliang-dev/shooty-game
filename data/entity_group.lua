@@ -1,7 +1,5 @@
 local class = require "class"
 
-local function noop() end
-
 local EntityGroup = class()
 
 function EntityGroup:new()
@@ -15,7 +13,6 @@ function EntityGroup:add(ctor, ...)
     entity.id = self.next_id
     entity.group = self
     entity.dead = false
-    entity.on_death = noop
 
     self.group_by_id[self.next_id] = entity
     self.next_id = self.next_id + 1
@@ -37,7 +34,7 @@ function EntityGroup:update(dt)
             if entity.on_death then
                 entity:on_death()
             end
-            self.group[id] = nil
+            self.group_by_id[id] = nil
         end
     end
 end
