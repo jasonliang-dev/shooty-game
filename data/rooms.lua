@@ -1,7 +1,6 @@
 local rooms = {
     list = {
         test = require "rooms.test",
-        test2 = require "rooms.test2",
     },
 }
 

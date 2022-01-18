@@ -22,7 +22,7 @@
 #define STB_TRUETYPE_IMPLEMENTATION
 #include "deps/stb_truetype.h"
 
-sapp_desc sokol_main(int argc, char *argv[]) {
+sapp_desc sokol_main(int argc, char **argv) {
     (void)argc;
     (void)argv;
 

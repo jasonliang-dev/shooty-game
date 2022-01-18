@@ -19,7 +19,12 @@ function RoomTest:new()
 
     self.group = EntityGroup()
     map_test:populate_entity_group(self.group)
-    self.player = self.group:add(Player, spawn.x, spawn.y, self.camera)
+    self.player = self.group:add(Player, {
+        x = spawn.x,
+        z = spawn.y,
+        camera = self.camera,
+        map = map_test,
+    })
 end
 
 function RoomTest:update(dt)
@@ -38,6 +43,18 @@ function RoomTest:draw()
 
     map_test:draw()
     self.group:draw()
+
+    if map_test:point_collision(self.player.x, self.player.z) then
+        local x1 = math.floor(self.player.x)
+        local z1 = math.floor(self.player.z)
+        local x2 = x1 + 1
+        local z2 = z1 + 1
+        gfx.bind_white_texture()
+        gfx.v3_t2_c4_f4(x1, 0.01, z1, 0, 0, 255, 0, 0, 255, 0, 0, 0, 0)
+        gfx.v3_t2_c4_f4(x1, 0.01, z2, 0, 0, 255, 0, 0, 255, 0, 0, 0, 0)
+        gfx.v3_t2_c4_f4(x2, 0.01, z2, 0, 0, 255, 0, 0, 255, 0, 0, 0, 0)
+        gfx.v3_t2_c4_f4(x2, 0.01, z1, 0, 0, 255, 0, 0, 255, 0, 0, 0, 0)
+    end
 end
 
 return RoomTest

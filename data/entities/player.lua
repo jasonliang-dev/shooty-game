@@ -10,11 +10,12 @@ local StateMachine = require "state_machine"
 
 local Player = class()
 
-function Player:new(x, z, camera)
-    self.camera = camera
+function Player:new(desc)
+    self.camera = desc.camera
+    self.map = desc.map
 
-    self.x = x
-    self.z = z
+    self.x = desc.x
+    self.z = desc.z
     self.dx = 0
     self.dz = 0
     self.dash_time = 0
@@ -69,6 +70,21 @@ function Player:update(dt)
     end
 end
 
+function Player:move(spd)
+    local x, z = self.x, self.z
+
+    self.x = x + self.dx * spd
+    if self.map:point_collision(self.x, self.z) then
+        self.x, self.z = x, z
+    end
+
+    x, z = self.x, self.z
+    self.z = z + self.dz * spd
+    if self.map:point_collision(self.x, self.z) then
+        self.x, self.z = x, z
+    end
+end
+
 function Player:fsm_enter_idle()
     self.sprite:play "idle"
 end
@@ -91,8 +107,6 @@ function Player:fsm_enter_walk()
 end
 
 function Player:fsm_walk(dt)
-    local spd = dt * 5
-
     self.dx = 0
     self.dz = 0
     if keyboard.down "w" then self.dz = self.dz - 1 end
@@ -109,8 +123,7 @@ function Player:fsm_walk(dt)
         self.fsm:transition "dash"
     end
 
-    self.x = self.x + self.dx * spd
-    self.z = self.z + self.dz * spd
+    self:move(5 * dt)
 end
 
 function Player:fsm_enter_dash()
@@ -119,9 +132,7 @@ end
 
 function Player:fsm_dash(dt)
     if self.dash_time > 0 then
-        local spd = dt * 9
-        self.x = self.x + self.dx * spd
-        self.z = self.z + self.dz * spd
+        self:move(9 * dt)
         self.dash_time = self.dash_time - dt
     else
         self.fsm:transition "idle"
