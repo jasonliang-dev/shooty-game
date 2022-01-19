@@ -7,6 +7,7 @@ local ray = require "ray"
 local Sprite = require "sprite"
 local Bullet = require "entities.bullet"
 local StateMachine = require "state_machine"
+local Spring = require "spring"
 
 local Player = class()
 
@@ -21,6 +22,7 @@ function Player:new(desc)
     self.dash_time = 0
     self.dash_time_init = 0.24
     self.facing_right = false
+    self.shoot_spring = Spring(400, 28, 0)
 
     self.sprite = Sprite {
         atlas = atl_entities,
@@ -44,6 +46,7 @@ function Player:new(desc)
 end
 
 function Player:update(dt)
+    self.shoot_spring:update(dt)
     self.sprite:update(dt)
     self.fsm:update(dt)
 
@@ -65,23 +68,29 @@ function Player:update(dt)
                 local dz = raycast.point.z - self.z
                 dx, dz = vec2.normalize(dx, dz)
                 self.group:add(Bullet, self.x, self.z, dx, dz)
+                self.shoot_spring:pull(0.12)
             end
         end
     end
 end
 
 function Player:move(spd)
-    local x, z = self.x, self.z
+    local sub_steps = 4
+    local dx, dz = self.dx / sub_steps, self.dz / sub_steps
+    local x, z
 
-    self.x = x + self.dx * spd
-    if self.map:point_collision(self.x, self.z) then
-        self.x, self.z = x, z
-    end
+    for i = 1, sub_steps do
+        x, z = self.x, self.z
+        self.x = x + dx * spd
+        if self.map:point_collision(self.x, self.z) then
+            self.x, self.z = x, z
+        end
 
-    x, z = self.x, self.z
-    self.z = z + self.dz * spd
-    if self.map:point_collision(self.x, self.z) then
-        self.x, self.z = x, z
+        x, z = self.x, self.z
+        self.z = z + dz * spd
+        if self.map:point_collision(self.x, self.z) then
+            self.x, self.z = x, z
+        end
     end
 end
 
@@ -149,22 +158,27 @@ function Player:draw()
         rad = -rad
     end
 
-    local x1, y1, z1, x2, y2, z2, x3, y3, z3, x4, y4, z4
+    local x1, y1, z1, x2, y2, z2, x3, y3, x4, y4
     if self.dx ~= 0 then
         x1, y1 = vec2.rotate(rad, self.x - 0.5, 1.2, self.x, 0.6)
         x2, y2 = vec2.rotate(rad, self.x - 0.5, 0.0, self.x, 0.6)
         x3, y3 = vec2.rotate(rad, self.x + 0.5, 0.0, self.x, 0.6)
         x4, y4 = vec2.rotate(rad, self.x + 0.5, 1.2, self.x, 0.6)
-        z1, z2 = self.z, self.z, self.z, self.z
+        z1, z2 = self.z, self.z
     else
         x1, x2 = self.x - 0.5, self.x - 0.5
         x3, x4 = self.x + 0.5, self.x + 0.5
 
         y1, z1 = vec2.rotate(rad, 1.2, self.z, 0.6, self.z)
         y2, z2 = vec2.rotate(rad, 0.0, self.z, 0.6, self.z)
-        y3, z3 = y2, z2
-        y4, z4 = y1, z1
+        y3 = y2
+        y4 = y1
     end
+
+    x1 = x1 - self.shoot_spring.x
+    x2 = x2 - self.shoot_spring.x
+    x3 = x3 + self.shoot_spring.x
+    x4 = x4 + self.shoot_spring.x
 
     local uv = self.sprite:uv()
     local u1 = self.facing_right and uv.u2 or uv.u1
@@ -180,10 +194,10 @@ function Player:draw()
     end
 
     gfx.bind_texture(self.sprite.atlas.texture.id)
-    gfx.v3_t2_c4_f4(x1, y1, z1, u1, v1, r, g, b, a, 0, 0, 0, 0)
-    gfx.v3_t2_c4_f4(x2, y2, z2, u1, v2, r, g, b, a, 0, 0, 0, 0)
-    gfx.v3_t2_c4_f4(x3, y3, z2, u2, v2, r, g, b, a, 0, 0, 0, 0)
-    gfx.v3_t2_c4_f4(x4, y4, z1, u2, v1, r, g, b, a, 0, 0, 0, 0)
+    gfx.v3_t2_c4(x1, y1, z1, u1, v1, r, g, b, a)
+    gfx.v3_t2_c4(x2, y2, z2, u1, v2, r, g, b, a)
+    gfx.v3_t2_c4(x3, y3, z2, u2, v2, r, g, b, a)
+    gfx.v3_t2_c4(x4, y4, z1, u2, v1, r, g, b, a)
 end
 
 return Player

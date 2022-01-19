@@ -34,7 +34,7 @@ function Tilemap:new(filename)
 
     for _, layer in ipairs(export.layers) do
         if layer.type == "tilelayer" then
-            self:create_verticies(export, layer, tileset)
+            self:create_tiles(export, layer, tileset)
         elseif layer.type == "objectgroup" then
             self:push_objects(export, layer.objects)
         end
@@ -46,7 +46,7 @@ function Tilemap:new(filename)
     handle:close()
 end
 
-function Tilemap:create_verticies(export, layer, tileset)
+function Tilemap:create_tiles(export, layer, tileset)
     local len = 0
     for _, cell in pairs(layer.data) do
         if cell ~= 0 then

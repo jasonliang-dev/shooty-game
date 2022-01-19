@@ -1,9 +1,13 @@
 local rooms = require "rooms"
 local mat = require "mat"
+local vec = require "vec"
 local keyboard = require "keyboard"
 local mouse = require "mouse"
 local Atlas = require "atlas"
 local Tilemap = require "tilemap"
+local PriorityQueue = require "priority_queue"
+
+local vec3 = vec.vec3
 
 function core.init()
     atl_tiles = assert(Atlas "data/content/tiles.rtpa")
@@ -13,6 +17,21 @@ function core.init()
     fnt_small = assert(gfx.make_font("data/content/times.ttf", 20))
 
     rooms.start "test"
+
+    local pq = PriorityQueue()
+    pq:push_min(0, 0)
+    pq:push_min(1, 1)
+    pq:push_min(5, 5)
+    pq:push_min(9, 9)
+    pq:push_min(3, 3)
+    pq:push_min(2, 2)
+    pq:push_min(4, 4)
+
+    local v
+    repeat
+        v = pq:pop_min()
+        print(v)
+    until v == nil
 end
 
 function core.event(type, ...)
