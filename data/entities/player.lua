@@ -10,6 +10,7 @@ local StateMachine = require "state_machine"
 local Spring = require "spring"
 
 local Player = class()
+Player.classname = "Player"
 
 function Player:new(desc)
     self.camera = desc.camera
@@ -45,6 +46,10 @@ function Player:new(desc)
     }
 end
 
+function Player:init()
+    self.group.player = self
+end
+
 function Player:update(dt)
     self.shoot_spring:update(dt)
     self.sprite:update(dt)
@@ -68,7 +73,7 @@ function Player:update(dt)
                 local dz = raycast.point.z - self.z
                 dx, dz = vec2.normalize(dx, dz)
                 self.group:add(Bullet, self.x, self.z, dx, dz)
-                self.shoot_spring:pull(0.12)
+                self.shoot_spring:pull(0.08)
             end
         end
     end
@@ -179,6 +184,10 @@ function Player:draw()
     x2 = x2 - self.shoot_spring.x
     x3 = x3 + self.shoot_spring.x
     x4 = x4 + self.shoot_spring.x
+    y1 = y1 - self.shoot_spring.x
+    y2 = y2 + self.shoot_spring.x
+    y3 = y3 + self.shoot_spring.x
+    y4 = y4 - self.shoot_spring.x
 
     local uv = self.sprite:uv()
     local u1 = self.facing_right and uv.u2 or uv.u1

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.5" tiledversion="1.7.2" orientation="orthogonal" renderorder="right-down" width="30" height="30" tilewidth="16" tileheight="16" infinite="0" nextlayerid="4" nextobjectid="9">
+<map version="1.5" tiledversion="1.7.2" orientation="orthogonal" renderorder="right-down" width="30" height="30" tilewidth="16" tileheight="16" infinite="0" nextlayerid="4" nextobjectid="29">
  <editorsettings>
   <export target="map.json" format="json"/>
  </editorsettings>
@@ -7,20 +7,22 @@
   <image source="tiles.png" width="256" height="256"/>
   <wangsets>
    <wangset name="grass" type="corner" tile="-1">
-    <wangcolor name="" color="#ff0000" tile="-1" probability="1"/>
-    <wangtile tileid="1" wangid="0,0,0,1,0,0,0,0"/>
-    <wangtile tileid="2" wangid="0,0,0,1,0,1,0,0"/>
-    <wangtile tileid="3" wangid="0,0,0,0,0,1,0,0"/>
-    <wangtile tileid="4" wangid="0,1,0,0,0,1,0,1"/>
-    <wangtile tileid="5" wangid="0,1,0,1,0,0,0,1"/>
-    <wangtile tileid="13" wangid="0,1,0,1,0,0,0,0"/>
+    <wangcolor name="land" color="#ff0000" tile="-1" probability="1"/>
+    <wangcolor name="water" color="#00ff00" tile="-1" probability="1"/>
+    <wangtile tileid="1" wangid="0,2,0,1,0,2,0,2"/>
+    <wangtile tileid="2" wangid="0,2,0,1,0,1,0,2"/>
+    <wangtile tileid="3" wangid="0,2,0,2,0,1,0,2"/>
+    <wangtile tileid="4" wangid="0,1,0,2,0,1,0,1"/>
+    <wangtile tileid="5" wangid="0,1,0,1,0,2,0,1"/>
+    <wangtile tileid="6" wangid="0,2,0,2,0,2,0,2"/>
+    <wangtile tileid="13" wangid="0,1,0,1,0,2,0,2"/>
     <wangtile tileid="14" wangid="0,1,0,1,0,1,0,1"/>
-    <wangtile tileid="15" wangid="0,0,0,0,0,1,0,1"/>
-    <wangtile tileid="16" wangid="0,0,0,1,0,1,0,1"/>
-    <wangtile tileid="17" wangid="0,1,0,1,0,1,0,0"/>
-    <wangtile tileid="25" wangid="0,1,0,0,0,0,0,0"/>
-    <wangtile tileid="26" wangid="0,1,0,0,0,0,0,1"/>
-    <wangtile tileid="27" wangid="0,0,0,0,0,0,0,1"/>
+    <wangtile tileid="15" wangid="0,2,0,2,0,1,0,1"/>
+    <wangtile tileid="16" wangid="0,2,0,1,0,1,0,1"/>
+    <wangtile tileid="17" wangid="0,1,0,1,0,1,0,2"/>
+    <wangtile tileid="25" wangid="0,1,0,2,0,2,0,2"/>
+    <wangtile tileid="26" wangid="0,1,0,2,0,2,0,1"/>
+    <wangtile tileid="27" wangid="0,2,0,2,0,2,0,1"/>
     <wangtile tileid="74" wangid="0,1,0,1,0,1,0,1"/>
    </wangset>
    <wangset name="edge" type="edge" tile="-1">
@@ -52,16 +54,16 @@
 7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,
 7,7,7,7,7,7,7,7,7,7,7,7,7,7,2,4,7,7,7,7,7,7,7,7,7,7,7,7,7,7,
 7,7,7,7,7,7,7,7,7,7,7,7,7,2,18,17,4,7,7,7,7,7,7,7,7,7,7,7,7,7,
-7,7,7,7,7,7,7,7,7,7,7,7,7,14,15,75,17,4,7,30,7,7,7,7,7,7,7,7,7,7,
+7,7,7,7,7,7,7,7,7,7,7,29,7,14,15,75,17,4,7,30,7,7,7,7,7,7,7,7,7,7,
 7,7,7,7,7,7,7,7,7,7,7,7,2,18,15,15,15,17,4,7,7,7,7,7,7,7,7,7,7,7,
 7,7,7,7,7,7,7,7,7,7,7,2,18,15,75,15,15,15,17,3,4,7,7,7,7,7,7,7,7,7,
 7,7,7,7,7,7,7,7,7,7,2,18,15,15,5,27,6,15,15,15,16,7,7,7,7,7,7,7,7,7,
 7,7,7,7,7,29,7,7,7,2,18,15,15,15,17,3,18,15,15,15,17,4,7,7,30,7,7,7,7,7,
-7,7,7,7,7,7,30,7,7,14,15,15,15,15,15,75,15,15,15,15,15,16,7,7,7,7,7,7,7,7,
-7,7,7,7,7,7,7,7,2,18,5,27,6,15,15,5,27,6,15,15,15,17,4,7,7,7,7,7,7,7,
-7,7,7,7,7,7,7,7,14,15,16,2,18,5,27,28,7,26,27,6,75,15,16,7,7,7,7,7,7,7,
-7,7,7,7,7,7,7,2,18,75,16,14,15,17,4,7,7,7,7,14,15,15,16,7,7,7,7,7,7,7,
-7,7,7,7,7,7,7,14,15,15,17,18,15,15,16,7,7,7,7,14,15,15,16,7,7,7,7,7,7,7,
+7,7,7,7,7,7,30,7,7,26,6,15,15,15,15,75,15,15,15,15,15,16,7,7,7,7,7,7,7,7,
+7,7,7,7,7,7,7,7,2,4,26,6,15,15,15,5,27,6,15,15,15,17,4,7,7,7,7,7,7,7,
+7,7,7,7,7,7,7,7,14,17,4,14,75,5,27,28,7,26,27,6,75,15,16,7,7,7,7,7,7,7,
+7,7,7,7,7,7,7,2,18,75,16,14,15,17,4,7,29,7,7,14,15,15,16,7,7,7,7,7,7,7,
+7,7,7,7,7,7,7,14,15,15,17,18,15,15,16,7,7,30,7,14,15,15,16,7,7,7,7,7,7,7,
 7,7,7,7,7,7,7,14,15,15,15,15,15,15,17,3,4,7,2,18,75,15,16,7,7,30,7,7,7,7,
 7,7,7,7,7,7,7,26,6,15,15,75,75,75,15,15,17,3,18,15,15,15,16,7,29,7,7,7,7,7,
 7,7,7,7,7,7,7,7,14,15,15,75,15,75,75,15,15,15,15,75,15,5,28,7,7,7,7,7,7,7,
@@ -70,26 +72,86 @@
 7,7,7,7,7,7,29,30,7,7,7,7,26,27,27,27,27,27,27,28,7,7,7,7,7,7,7,7,7,7,
 7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,
 7,7,7,7,7,7,7,7,7,7,7,7,7,30,7,7,7,7,7,7,7,30,7,29,7,7,7,7,7,7,
-7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,29,7,7,7,7,7,7,7,7,7,7,7,7,7,7,
-7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,
-7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,
-7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,
-7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,
-7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,
+7,7,7,7,2,3,3,4,7,7,7,7,7,7,7,29,7,7,7,7,7,7,7,7,7,7,7,7,7,7,
+7,7,7,2,18,75,15,17,4,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,
+7,7,7,14,75,5,27,6,17,4,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,
+7,7,7,14,15,17,3,18,75,17,3,4,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,
+7,7,7,26,27,27,6,15,75,75,5,28,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,
+7,7,7,7,7,7,26,27,27,27,28,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,
 7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7
 </data>
  </layer>
  <objectgroup id="2" name="Object Layer 1">
-  <object id="1" name="spawn" x="254.667" y="272.833">
+  <object id="1" name="spawn" type="spawn" x="254.667" y="272.833">
    <point/>
   </object>
-  <object id="6" name="grass" type="grass" x="207.667" y="192">
+  <object id="6" name="grass" type="grass" x="265" y="169.333">
+   <point/>
+  </object>
+  <object id="9" name="tree" type="tree" x="159" y="255.667">
+   <point/>
+  </object>
+  <object id="10" name="tree" type="tree" x="182.667" y="248.667">
+   <point/>
+  </object>
+  <object id="14" name="tree" type="tree" x="327.667" y="224">
+   <point/>
+  </object>
+  <object id="15" name="tree" type="tree" x="343" y="238">
+   <point/>
+  </object>
+  <object id="16" name="tree" type="tree" x="328.334" y="258.667">
+   <point/>
+  </object>
+  <object id="11" name="tree" type="tree" x="170" y="275">
+   <point/>
+  </object>
+  <object id="12" name="tree" type="tree" x="201.334" y="262.333">
+   <point/>
+  </object>
+  <object id="13" name="tree" type="tree" x="191.667" y="288.667">
    <point/>
   </object>
   <object id="7" name="grass" type="grass" x="288" y="160">
    <point/>
   </object>
   <object id="8" name="grass" type="grass" x="319.333" y="176">
+   <point/>
+  </object>
+  <object id="17" name="grass" type="grass" x="310.666" y="285.667">
+   <point/>
+  </object>
+  <object id="19" name="grass" type="grass" x="220" y="282.667">
+   <point/>
+  </object>
+  <object id="20" name="grass" type="grass" x="221" y="309.333">
+   <point/>
+  </object>
+  <object id="25" name="grass" type="grass" x="276" y="307.833">
+   <point/>
+  </object>
+  <object id="26" name="grass" type="grass" x="225" y="176.333">
+   <point/>
+  </object>
+  <object id="27" name="grass" type="grass" x="243" y="116.833">
+   <point/>
+  </object>
+  <object id="28" name="grass" type="grass" x="196.5" y="149.333">
+   <point/>
+  </object>
+  <object id="23" name="grass" type="grass" x="140.5" y="437.333">
+   <point/>
+  </object>
+  <object id="24" name="grass" type="grass" x="94.4997" y="394.333">
+   <point/>
+  </object>
+  <object id="21" name="grass" type="grass" x="153" y="220">
+   <point/>
+  </object>
+  <object id="22" name="grass" type="grass" x="134" y="247.333">
+   <point/>
+  </object>
+  <object id="18" name="grass" type="grass" x="334.666" y="279.667">
    <point/>
   </object>
  </objectgroup>

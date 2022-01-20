@@ -1,6 +1,9 @@
 local json = require "deps.json"
 local class = require "class"
 local Plant = require "entities.plant"
+local PriorityQueue = require "priority_queue"
+
+-- top left of tilemap is at 0,0 even though arrays start at 1
 
 local Tilemap = class()
 
@@ -20,33 +23,7 @@ Tilemap.collision_table = {
     [17] = "in top left",
 }
 
-function Tilemap:new(filename)
-    local handle = assert(io.open(filename))
-    local export = json.decode(handle:read "*a")
-
-    assert(#export.tilesets == 1)
-    local tileset = export.tilesets[1]
-
-    local path = filename:match "(.*/)"
-    local image = tileset.image
-    self.texture = gfx.make_texture(path .. image)
-    self.objects = {}
-
-    for _, layer in ipairs(export.layers) do
-        if layer.type == "tilelayer" then
-            self:create_tiles(export, layer, tileset)
-        elseif layer.type == "objectgroup" then
-            self:push_objects(export, layer.objects)
-        end
-    end
-
-    self.width = export.width
-    self.height = export.height
-
-    handle:close()
-end
-
-function Tilemap:create_tiles(export, layer, tileset)
+local function create_tiles(self, export, layer, tileset)
     local len = 0
     for _, cell in pairs(layer.data) do
         if cell ~= 0 then
@@ -65,7 +42,7 @@ function Tilemap:create_tiles(export, layer, tileset)
         for x = 1, export.width do
             local index = layer.data[(y - 1) * export.width + x]
             if index == 0 then
-                goto next_tile
+                goto continue
             end
 
             -- unset flags?
@@ -97,12 +74,38 @@ function Tilemap:create_tiles(export, layer, tileset)
                 self.collision[(y - 1) * export.width + x] = collision
             end
 
-            ::next_tile::
+            ::continue::
         end
     end
 end
 
-function Tilemap:push_objects(export, objects)
+local function create_graph(self, export, layer, firstgid)
+    self.graph_nodes = {}
+
+    for y = 1, export.height do
+        for x = 1, export.width do
+            local index = layer.data[(y - 1) * export.width + x]
+            if index == 0 then
+                goto continue
+            end
+
+            local id = index - firstgid
+            local collision = Tilemap.collision_table[id]
+            if not collision then
+                self.graph_nodes[(y - 1) * export.width + x] = {
+                    x = x - 1,
+                    y = y - 1,
+                    cost = 1 / 0,
+                    visited = false,
+                }
+            end
+
+            ::continue::
+        end
+    end
+end
+
+local function push_objects(self, export, objects)
     for _, object in ipairs(objects) do
         table.insert(self.objects, {
             name = object.name,
@@ -111,6 +114,33 @@ function Tilemap:push_objects(export, objects)
             y = object.y / export.tileheight,
         })
     end
+end
+
+function Tilemap:new(filename)
+    local handle = assert(io.open(filename))
+    local export = json.decode(handle:read "*a")
+
+    assert(#export.tilesets == 1)
+    local tileset = export.tilesets[1]
+
+    local path = filename:match "(.*/)"
+    local image = tileset.image
+    self.texture = gfx.make_texture(path .. image)
+    self.objects = {}
+
+    for _, layer in ipairs(export.layers) do
+        if layer.type == "tilelayer" then
+            create_tiles(self, export, layer, tileset)
+            create_graph(self, export, layer, tileset.firstgid)
+        elseif layer.type == "objectgroup" then
+            push_objects(self, export, layer.objects)
+        end
+    end
+
+    self.width = export.width
+    self.height = export.height
+
+    handle:close()
 end
 
 function Tilemap:object_by_name(name)
@@ -125,6 +155,8 @@ function Tilemap:populate_entity_group(group)
     for _, object in ipairs(self.objects) do
         if object.type == "grass" then
             group:add(Plant, object.x, object.y, "grass1")
+        elseif object.type == "tree" then
+            group:add(Plant, object.x, object.y, "tree")
         end
     end
 end
@@ -166,6 +198,79 @@ function Tilemap:point_collision(x, y)
     end
 
     error "unreachable"
+end
+
+-- cost is distance^2
+local function tile_cost(ax, ay, bx, by)
+    local dx = bx - ax
+    local dy = ay - by
+    return dx * dx + dy + dy
+end
+
+local function tile_neighbors(self, x, y)
+    local neighbors = {}
+
+    for yy = y - 1, y + 1 do
+        for xx = x - 1, x + 1 do
+            local node = self.graph_nodes[yy * self.width + xx + 1]
+            if node then
+                table.insert(neighbors, node)
+            end
+        end
+    end
+
+    return neighbors
+end
+
+function Tilemap:dijkstra(start_x, start_y, end_x, end_y)
+    start_x, start_y = math.floor(start_x), math.floor(start_y)
+    end_x, end_y = math.floor(end_x), math.floor(end_y)
+
+    local path = {}
+
+    if start_x == end_x and start_y == end_y then
+        table.insert(path, {x = start_x, y = start_y})
+        return path
+    end
+
+    for _, node in pairs(self.graph_nodes) do
+        node.cost = 1 / 0
+        node.parent = nil
+        node.visited = false
+    end
+
+    local open = PriorityQueue()
+
+    local begin = self.graph_nodes[start_y * self.width + start_x + 1]
+    if not begin then return end
+    begin.cost = tile_cost(start_x, start_y, end_x, end_y)
+    begin.visited = true
+
+    open:push_min(begin, begin.cost)
+
+    while open:count() ~= 0 do
+        local top = open:pop_min()
+
+        if top.x == end_x and top.y == end_y then
+            while top.parent do
+                table.insert(path, {x = top.x, y = top.y})
+                top = top.parent
+            end
+            return path
+        end
+
+        local neighbors = tile_neighbors(self, top.x, top.y)
+        for _, node in ipairs(neighbors) do
+            if node.visited then goto continue end
+
+            node.cost = node.cost + tile_cost(node.x, node.y, end_x, end_y)
+            node.parent = top
+            node.visited = true
+            open:push_min(node, node.cost)
+
+            ::continue::
+        end
+    end
 end
 
 function Tilemap:draw()
