@@ -11,3 +11,10 @@ using u16 = uint16_t;
 using u32 = uint32_t;
 using u64 = uint64_t;
 
+struct vec2 {
+    float x, y;
+};
+
+struct Rect {
+    float x1, y1, x2, y2;
+};

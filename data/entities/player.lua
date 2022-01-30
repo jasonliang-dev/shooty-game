@@ -14,7 +14,7 @@ Player.classname = "Player"
 
 function Player:new(desc)
     self.camera = desc.camera
-    self.map = desc.map
+    -- self.map = desc.map
 
     self.x = desc.x
     self.z = desc.z
@@ -79,26 +79,6 @@ function Player:update(dt)
     end
 end
 
-function Player:move(spd)
-    local sub_steps = 4
-    local dx, dz = self.dx / sub_steps, self.dz / sub_steps
-    local x, z
-
-    for i = 1, sub_steps do
-        x, z = self.x, self.z
-        self.x = x + dx * spd
-        if self.map:point_collision(self.x, self.z) then
-            self.x, self.z = x, z
-        end
-
-        x, z = self.x, self.z
-        self.z = z + dz * spd
-        if self.map:point_collision(self.x, self.z) then
-            self.x, self.z = x, z
-        end
-    end
-end
-
 function Player:fsm_enter_idle()
     self.sprite:play "idle"
 end
@@ -137,7 +117,9 @@ function Player:fsm_walk(dt)
         self.fsm:transition "dash"
     end
 
-    self:move(5 * dt)
+    -- self.x, self.z = self.map:point_move(self.x, self.z, self.dx * 5 * dt, self.dz * 5 * dt)
+    self.x = self.x + self.dx * 5 * dt
+    self.z = self.z + self.dz * 5 * dt
 end
 
 function Player:fsm_enter_dash()
@@ -146,7 +128,9 @@ end
 
 function Player:fsm_dash(dt)
     if self.dash_time > 0 then
-        self:move(9 * dt)
+        -- self.x, self.z = self.map:point_move(self.x, self.z, self.dx * 9 * dt, self.dz * 9 * dt)
+        self.x = self.x + self.dx * 9 * dt
+        self.z = self.z + self.dz * 9 * dt
         self.dash_time = self.dash_time - dt
     else
         self.fsm:transition "idle"

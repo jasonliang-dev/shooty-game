@@ -4,19 +4,17 @@
 #include "deps/sokol_time.h"
 #include <stdlib.h>
 
-namespace app {
+AppState *app;
 
-State *state;
-
-void init(void) {
+void app_init(void) {
     sg_setup({.context = sapp_sgcontext()});
     stm_setup();
-    state = new State{};
+    app = new AppState{};
 
-    lua_State *L = state->lua = luaL_newstate();
+    lua_State *L = app->lua = luaL_newstate();
     luaL_openlibs(L);
-    luaL_requiref(L, "sys", sys::lib, true);
-    luaL_requiref(L, "gfx", gfx::lib, true);
+    luaL_requiref(L, "sys", sys_lib, true);
+    luaL_requiref(L, "gfx", gfx_lib, true);
     lua_pop(L, 2);
 
     lua_newtable(L);
@@ -57,12 +55,12 @@ void init(void) {
         exit(-1);
     });
 
-    state->renderer = Renderer(6000);
+    app->renderer.create(6000);
 
     u8 rgba[4] = {255, 255, 255, 255};
     sg_image_data image_data{};
     image_data.subimage[0][0] = SG_RANGE(rgba);
-    state->white = sg_make_image({
+    app->white = sg_make_image({
         .width = 1,
         .height = 1,
         .pixel_format = SG_PIXELFORMAT_RGBA8,
@@ -71,11 +69,11 @@ void init(void) {
         .data = image_data,
     });
 
-    state->time_now = stm_now();
+    app->time_now = stm_now();
 }
 
-void event(const sapp_event *e) {
-    lua_State *L = state->lua;
+void app_event(const sapp_event *e) {
+    lua_State *L = app->lua;
 
     // xpcall(core.event, l_msgh, ...)
     lua_getglobal(L, "core");
@@ -132,12 +130,12 @@ void event(const sapp_event *e) {
     }
 }
 
-void frame(void) {
+void app_frame(void) {
     u64 now = stm_now();
-    float dt = stm_diff(now, state->time_now) / 1000000000.0f;
-    state->time_now = now;
+    float dt = stm_diff(now, app->time_now) / 1000000000.0f;
+    app->time_now = now;
 
-    lua_State *L = state->lua;
+    lua_State *L = app->lua;
 
     // xpcall(core.frame, l_msgh)
     lua_getglobal(L, "core");
@@ -151,10 +149,10 @@ void frame(void) {
     }
 }
 
-void cleanup(void) {
-    lua_close(state->lua);
-    delete state;
+void app_cleanup(void) {
+    lua_close(app->lua);
+    app->renderer.destroy();
+    delete app;
     sg_shutdown();
 }
 
-} // namespace app

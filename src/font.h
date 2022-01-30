@@ -1,32 +1,22 @@
 #pragma once
 
-#include "renderer.h"
 #include "deps/sokol_gfx.h"
 #include "deps/stb_rect_pack.h"
 #include "deps/stb_truetype.h"
+#include "renderer.h"
 
-namespace FontAlign {
-enum : u8 {
-    left = 1 << 0,
-    right = 1 << 1,
-    center = 1 << 2,
-    top = 1 << 3,
-    bottom = 1 << 4,
-    middle = 1 << 5,
+enum FontAlign : u8 {
+    FONT_ALIGN_LEFT = 1 << 0,
+    FONT_ALIGN_RIGHT = 1 << 1,
+    FONT_ALIGN_CENTER = 1 << 2,
+    FONT_ALIGN_TOP = 1 << 3,
+    FONT_ALIGN_BOTTOM = 1 << 4,
+    FONT_ALIGN_MIDDLE = 1 << 5,
 };
-}
 
 struct Font {
-    Font() = default;
-    Font(const char *filename, float size);
-
-    ~Font();
-
-    Font(const Font &) = delete;
-    Font &operator=(const Font &) = delete;
-
-    Font(Font &&) noexcept;
-    Font &operator=(Font &&) noexcept;
+    bool try_create(const char *filename, float size);
+    void destroy();
 
     float width(const char *text) const;
     float height() const;
@@ -38,7 +28,6 @@ struct Font {
         u8 color[4];
         u8 alignment;
     };
-
     float print(Renderer &renderer, const PrintDesc &desc) const;
 
   private:

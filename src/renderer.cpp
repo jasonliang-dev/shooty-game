@@ -1,11 +1,10 @@
 #include "renderer.h"
-#include "ints.h"
-#include <string.h>
 #include <stdio.h>
+#include <string.h>
 
-Renderer::Renderer(int vertex_capacity) {
+void Renderer::create(int vertex_capacity) {
     m_vbo = sg_make_buffer({
-        .size = sizeof(Vertex) * vertex_capacity,
+        .size = sizeof(RenVertex) * vertex_capacity,
         .type = SG_BUFFERTYPE_VERTEXBUFFER,
         .usage = SG_USAGE_STREAM,
     });
@@ -34,7 +33,7 @@ Renderer::Renderer(int vertex_capacity) {
 
     sg_shader_desc sdesc{};
 
-    sdesc.vs.uniform_blocks[0].size = sizeof(Matrix);
+    sdesc.vs.uniform_blocks[0].size = sizeof(RenMatrix);
     sdesc.vs.uniform_blocks[0].uniforms[0].name = "u_mvp";
     sdesc.vs.uniform_blocks[0].uniforms[0].type = SG_UNIFORMTYPE_MAT4;
     sdesc.fs.images[0].name = "u_texture";
@@ -93,62 +92,19 @@ Renderer::Renderer(int vertex_capacity) {
 
     m_pip = sg_make_pipeline(pdesc);
 
-    m_vertices = new Vertex[vertex_capacity]{};
+    m_vertices = new RenVertex[vertex_capacity]{};
     m_vertex_count = 0;
     m_vertex_capacity = vertex_capacity;
 }
 
-Renderer::~Renderer() {
+void Renderer::destroy() {
     sg_destroy_pipeline(m_pip);
     sg_destroy_buffer(m_vbo);
     sg_destroy_buffer(m_ibo);
     delete m_vertices;
 }
 
-Renderer::Renderer(Renderer &&other) noexcept {
-    m_pip = other.m_pip;
-    m_vbo = other.m_vbo;
-    m_ibo = other.m_ibo;
-    m_vertices = other.m_vertices;
-    m_vertex_count = other.m_vertex_count;
-    m_vertex_capacity = other.m_vertex_capacity;
-    u_mvp = other.u_mvp;
-    u_texture = other.u_texture;
-
-    other.m_pip.id = 0;
-    other.m_vbo.id = 0;
-    other.m_ibo.id = 0;
-    other.m_vertices = nullptr;
-}
-
-Renderer &Renderer::operator=(Renderer &&other) noexcept {
-    if (this != &other) {
-        sg_destroy_pipeline(m_pip);
-        sg_destroy_buffer(m_vbo);
-        sg_destroy_buffer(m_ibo);
-        delete m_vertices;
-
-        m_pip = other.m_pip;
-        m_vbo = other.m_vbo;
-        m_ibo = other.m_ibo;
-        m_vertices = other.m_vertices;
-        m_vertex_count = other.m_vertex_count;
-        m_vertex_capacity = other.m_vertex_capacity;
-        u_mvp = other.u_mvp;
-        u_texture = other.u_texture;
-
-        other.m_pip.id = 0;
-        other.m_vbo.id = 0;
-        other.m_ibo.id = 0;
-        other.m_vertices = nullptr;
-    }
-
-    return *this;
-}
-
-void Renderer::begin() {
-    m_draw_count = 0;
-}
+void Renderer::begin() { m_draw_count = 0; }
 
 void Renderer::flush() {
     if (m_vertex_count == 0) {
@@ -156,7 +112,7 @@ void Renderer::flush() {
     }
 
     int off = sg_append_buffer(
-        m_vbo, {.ptr = m_vertices, .size = sizeof(Vertex) * m_vertex_count});
+        m_vbo, {.ptr = m_vertices, .size = sizeof(RenVertex) * m_vertex_count});
 
     sg_apply_pipeline(m_pip);
     sg_apply_bindings({
@@ -172,7 +128,7 @@ void Renderer::flush() {
     m_draw_count++;
 }
 
-void Renderer::push(Vertex vertex) {
+void Renderer::push(RenVertex vertex) {
     if (m_vertex_count == m_vertex_capacity) {
         flush();
     }
@@ -180,16 +136,16 @@ void Renderer::push(Vertex vertex) {
     m_vertices[m_vertex_count++] = vertex;
 }
 
-void Renderer::push(Vertex *vertices, int n) {
+void Renderer::push(RenVertex *vertices, int n) {
     if (m_vertex_count + n > m_vertex_capacity) {
         flush();
     }
 
-    memcpy(m_vertices + m_vertex_count, vertices, sizeof(Vertex) * n);
+    memcpy(m_vertices + m_vertex_count, vertices, sizeof(RenVertex) * n);
     m_vertex_count += n;
 }
 
-void Renderer::mvp(Matrix mat) {
+void Renderer::mvp(RenMatrix mat) {
     flush();
     u_mvp = mat;
 }
@@ -201,6 +157,8 @@ void Renderer::texture(sg_image tex) {
     }
 }
 
-int Renderer::draw_count() {
-    return m_draw_count;
-}
+int Renderer::draw_count() const { return m_draw_count; }
+sg_pipeline Renderer::pip() const { return m_pip; }
+sg_buffer Renderer::quad_ibo() const { return m_ibo; }
+RenMatrix Renderer::mvp() const { return u_mvp; }
+sg_image Renderer::texture() const { return u_texture; }

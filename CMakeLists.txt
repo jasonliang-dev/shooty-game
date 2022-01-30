@@ -18,6 +18,7 @@ add_executable(${PROJECT_NAME}
     src/app.cpp
     src/font.cpp
     src/renderer.cpp
+    src/tilemap.cpp
     src/main.cpp
 )
 

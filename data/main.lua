@@ -5,21 +5,17 @@ local keyboard = require "keyboard"
 local mouse = require "mouse"
 local lume = require "deps.lume"
 local Atlas = require "atlas"
-local Tilemap = require "tilemap"
 
 local vec3 = vec.vec3
 
 function core.init()
     atl_tiles = assert(Atlas "data/content/tiles.rtpa")
     atl_entities = assert(Atlas "data/content/entities.rtpa")
-    map_test = assert(Tilemap "data/content/map.json")
+    map_test1 = assert(gfx.make_tilemap "data/content/map.json")
     fnt_normal = assert(gfx.make_font("data/content/times.ttf", 32))
     fnt_small = assert(gfx.make_font("data/content/times.ttf", 20))
 
     rooms.start "test"
-
-    -- pathfind = map_test:dijkstra(17, 10, 15, 16)
-    -- pathfind = map_test:dijkstra(12, 10, 12, 18)
 end
 
 function core.event(type, ...)

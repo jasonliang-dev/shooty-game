@@ -5,20 +5,17 @@
 #include "deps/sokol_app.h"
 #include "renderer.h"
 
-namespace app {
-
-struct State {
+struct AppState {
     Renderer renderer;
     sg_image white;
     lua_State *lua;
     u64 time_now;
 };
 
-extern State *state;
+extern AppState *app;
 
-void init();
-void event(const sapp_event *e);
-void frame();
-void cleanup();
+void app_init();
+void app_event(const sapp_event *e);
+void app_frame();
+void app_cleanup();
 
-} // namespace app

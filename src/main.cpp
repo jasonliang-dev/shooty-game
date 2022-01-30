@@ -1,6 +1,13 @@
+#define _CRT_SECURE_NO_WARNINGS
 #define LUA_LIB
 
 #include "app.h"
+
+#define CUTE_TILED_IMPLEMENTATION
+#include "deps/cute_tiled.h"
+
+#define MAKE_LIB
+#include "deps/lua/onelua.c"
 
 #define SOKOL_IMPL
 #define SOKOL_GLCORE33
@@ -9,9 +16,6 @@
 #include "deps/sokol_gfx.h"
 #include "deps/sokol_glue.h"
 #include "deps/sokol_time.h"
-
-#define MAKE_LIB
-#include "deps/lua/onelua.c"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "deps/stb_image.h"
@@ -27,10 +31,10 @@ sapp_desc sokol_main(int argc, char **argv) {
     (void)argv;
 
     return {
-        .init_cb = app::init,
-        .frame_cb = app::frame,
-        .cleanup_cb = app::cleanup,
-        .event_cb = app::event,
+        .init_cb = app_init,
+        .frame_cb = app_frame,
+        .cleanup_cb = app_cleanup,
+        .event_cb = app_event,
         .width = 1366,
         .height = 768,
         .sample_count = 4,

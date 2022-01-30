@@ -2,12 +2,11 @@
 
 #include "font.h"
 #include "deps/sokol_gl.h"
-#include "ints.h"
-#include "io.h"
+#include "types.h"
 #include <stdio.h>
 #include <string.h>
 
-Font::Font(const char *filename, float size) {
+bool Font::try_create(const char *filename, float size) {
     const auto read_file = [](const char *filename) -> u8 * {
         FILE *handle = fopen(filename, "rb");
         if (!handle) {
@@ -27,7 +26,7 @@ Font::Font(const char *filename, float size) {
     u8 *ttf = read_file(filename);
     int ok = stbtt_InitFont(&m_info, ttf, 0);
     if (!ok) {
-        return;
+        return false;
     }
 
     const int width = 1024;
@@ -76,37 +75,11 @@ Font::Font(const char *filename, float size) {
     delete[] ttf;
     delete[] bitmap;
     delete[] rgba;
+   
+    return true;
 }
 
-Font::~Font() { sg_destroy_image(m_texture); }
-
-Font::Font(Font &&other) noexcept {
-    memcpy(m_ascii, other.m_ascii, sizeof(m_ascii));
-    m_info = other.m_info;
-    m_texture = other.m_texture;
-    m_texture_width = other.m_texture_width;
-    m_texture_height = other.m_texture_height;
-    m_size = other.m_size;
-
-    other.m_texture.id = 0;
-}
-
-Font &Font::operator=(Font &&other) noexcept {
-    if (this != &other) {
-        sg_destroy_image(m_texture);
-
-        memcpy(m_ascii, other.m_ascii, sizeof(m_ascii));
-        m_info = other.m_info;
-        m_texture = other.m_texture;
-        m_texture_width = other.m_texture_width;
-        m_texture_height = other.m_texture_height;
-        m_size = other.m_size;
-
-        other.m_texture.id = 0;
-    }
-
-    return *this;
-}
+void Font::destroy() { sg_destroy_image(m_texture); }
 
 float Font::width(const char *text) const {
     float width = 0;
@@ -126,16 +99,16 @@ float Font::print(Renderer &renderer, const PrintDesc &desc) const {
     const char *text = desc.text;
 
     float x = desc.x;
-    if (desc.alignment & FontAlign::right) {
+    if (desc.alignment & FONT_ALIGN_RIGHT) {
         x -= width(text);
-    } else if (desc.alignment & FontAlign::center) {
+    } else if (desc.alignment & FONT_ALIGN_CENTER) {
         x -= width(text) / 2;
     }
 
     float y = desc.y;
-    if (desc.alignment & FontAlign::top) {
+    if (desc.alignment & FONT_ALIGN_TOP) {
         y += m_size;
-    } else if (desc.alignment & FontAlign::middle) {
+    } else if (desc.alignment & FONT_ALIGN_MIDDLE) {
         y += m_size / 2;
     }
 

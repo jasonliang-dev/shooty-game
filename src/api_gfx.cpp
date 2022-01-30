@@ -1,34 +1,33 @@
 #include "api.h"
+#include "app.h"
 #include "deps/sokol_app.h"
 #include "deps/sokol_gfx.h"
 #include "deps/stb_image.h"
 #include "font.h"
-#include "app.h"
+#include "tilemap.h"
 #include <stdio.h>
 #include <string.h>
 
-namespace gfx {
-
-static int begin_draw(lua_State *L) {
+static int gfx_begin_draw(lua_State *L) {
     sg_begin_default_pass(sg_pass_action{}, sapp_width(), sapp_height());
-    app::state->renderer.begin();
+    app->renderer.begin();
     return 0;
 }
 
-static int end_draw(lua_State *L) {
-    app::state->renderer.flush();
+static int gfx_end_draw(lua_State *L) {
+    app->renderer.flush();
     sg_end_pass();
     sg_commit();
     return 0;
 }
 
-static int draw_count(lua_State *L) {
-    lua_pushnumber(L, app::state->renderer.draw_count());
+static int gfx_draw_count(lua_State *L) {
+    lua_pushnumber(L, app->renderer.draw_count());
     return 1;
 }
 
-static int bind_mvp(lua_State *L) {
-    Matrix m{};
+static int gfx_bind_mvp(lua_State *L) {
+    RenMatrix m{};
 
     lua_pushnil(L);
     for (int i = 0; lua_next(L, 1); i++) {
@@ -36,30 +35,30 @@ static int bind_mvp(lua_State *L) {
         lua_pop(L, 1);
     }
 
-    app::state->renderer.mvp(m);
+    app->renderer.mvp(m);
     return 0;
 }
 
-static int bind_white_texture(lua_State *L) {
+static int gfx_bind_white_texture(lua_State *L) {
     (void)L;
-    app::state->renderer.texture(app::state->white);
+    app->renderer.texture(app->white);
     return 0;
 }
 
-static int bind_texture(lua_State *L) {
+static int gfx_bind_texture(lua_State *L) {
     u32 id = (u32)luaL_checkinteger(L, 1);
-    app::state->renderer.texture({id});
+    app->renderer.texture({id});
     return 0;
 }
 
-static int v3_t2(lua_State *L) {
+static int gfx_v3_t2(lua_State *L) {
     float x = (float)luaL_checknumber(L, 1);
     float y = (float)luaL_checknumber(L, 2);
     float z = (float)luaL_checknumber(L, 3);
     float u = (float)luaL_checknumber(L, 4);
     float v = (float)luaL_checknumber(L, 5);
 
-    app::state->renderer.push({
+    app->renderer.push({
         .pos = {x, y, z},
         .uv = {u, v},
         .color = {255, 255, 255, 255},
@@ -69,7 +68,7 @@ static int v3_t2(lua_State *L) {
     return 0;
 }
 
-static int v3_t2_c4(lua_State *L) {
+static int gfx_v3_t2_c4(lua_State *L) {
     float x = (float)luaL_checknumber(L, 1);
     float y = (float)luaL_checknumber(L, 2);
     float z = (float)luaL_checknumber(L, 3);
@@ -80,7 +79,7 @@ static int v3_t2_c4(lua_State *L) {
     u8 b = (u8)luaL_optinteger(L, 8, 255);
     u8 a = (u8)luaL_optinteger(L, 9, 255);
 
-    app::state->renderer.push({
+    app->renderer.push({
         .pos = {x, y, z},
         .uv = {u, v},
         .color = {r, g, b, a},
@@ -90,7 +89,7 @@ static int v3_t2_c4(lua_State *L) {
     return 0;
 }
 
-static int v3_t2_c4_f4(lua_State *L) {
+static int gfx_v3_t2_c4_f4(lua_State *L) {
     float x = (float)luaL_checknumber(L, 1);
     float y = (float)luaL_checknumber(L, 2);
     float z = (float)luaL_checknumber(L, 3);
@@ -105,7 +104,7 @@ static int v3_t2_c4_f4(lua_State *L) {
     u8 fb = (u8)luaL_optinteger(L, 12, 0);
     u8 fa = (u8)luaL_optinteger(L, 13, 0);
 
-    app::state->renderer.push({
+    app->renderer.push({
         .pos = {x, y, z},
         .uv = {u, v},
         .color = {r, g, b, a},
@@ -115,7 +114,7 @@ static int v3_t2_c4_f4(lua_State *L) {
     return 0;
 }
 
-static int make_texture(lua_State *L) {
+static int gfx_make_texture(lua_State *L) {
     const char *filename = luaL_checkstring(L, 1);
 
     int width;
@@ -149,7 +148,10 @@ static int make_texture(lua_State *L) {
 
     lua_createtable(L, 0, 1);
     lua_pushcfunction(L, [](lua_State *L) -> int {
-        u32 id = (u32)luax::field_checkinteger(L, 1, "id");
+        lua_getfield(L, 1, "id");
+        u32 id = (u32)luaL_checkinteger(L, -1);
+        lua_pop(L, 1);
+
         sg_destroy_image(sg_image{id});
         return 0;
     });
@@ -159,17 +161,24 @@ static int make_texture(lua_State *L) {
     return 1;
 }
 
-static int make_font(lua_State *L) {
+static int gfx_make_font(lua_State *L) {
     const char *filename = luaL_checkstring(L, 1);
     const float size = (float)luaL_checknumber(L, 2);
 
     lua_createtable(L, 0, 3);
 
-    lua_pushlightuserdata(L, new Font(filename, size));
+    Font *font = new Font;
+    bool ok = font->try_create(filename, size);
+    if (!ok) {
+        delete font;
+        return 0;
+    }
+
+    lua_pushlightuserdata(L, font);
     lua_setfield(L, -2, "udata");
 
     lua_pushcfunction(L, [](lua_State *L) -> int {
-        Font *font = (Font *)luax::field_touserdata(L, 1, "udata");
+        Font *font = (Font *)luax_field_touserdata(L, 1, "udata");
 
         const char *text = luaL_checkstring(L, 2);
         float x = (float)luaL_checknumber(L, 3);
@@ -181,9 +190,9 @@ static int make_font(lua_State *L) {
         desc.x = x;
         desc.y = y;
         memset(desc.color, 255, sizeof(u8) * 4);
-        desc.alignment = FontAlign::left | FontAlign::bottom;
+        desc.alignment = FONT_ALIGN_LEFT | FONT_ALIGN_BOTTOM;
 
-        float n = font->print(app::state->renderer, desc);
+        float n = font->print(app->renderer, desc);
 
         lua_pushnumber(L, n);
         return 1;
@@ -192,7 +201,8 @@ static int make_font(lua_State *L) {
 
     lua_createtable(L, 0, 1);
     lua_pushcfunction(L, [](lua_State *L) -> int {
-        Font *font = (Font *)luax::field_touserdata(L, 1, "udata");
+        Font *font = (Font *)luax_field_touserdata(L, 1, "udata");
+        font->destroy();
         delete font;
         return 0;
     });
@@ -202,62 +212,43 @@ static int make_font(lua_State *L) {
     return 1;
 }
 
-static int make_vertex_array(lua_State *L) {
-    int count = (int)luaL_checkinteger(L, 1);
+static int gfx_make_tilemap(lua_State *L) {
+    const char *filename = luaL_checkstring(L, 1);
 
-    lua_createtable(L, 0, 4);
+    lua_createtable(L, 0, 3);
 
-    lua_pushlightuserdata(L, new Vertex[count]{});
+    Tilemap *map = new Tilemap;
+    bool ok = map->try_create(filename);
+    if (!ok) {
+        delete map;
+        return 0;
+    }
+
+    lua_pushlightuserdata(L, map);
     lua_setfield(L, -2, "udata");
 
     lua_pushcfunction(L, [](lua_State *L) -> int {
-        Vertex *vertices = (Vertex *)luax::field_touserdata(L, 1, "udata");
-        int index = (int)luaL_checkinteger(L, 2);
+        Tilemap *map = (Tilemap *)luax_field_touserdata(L, 1, "udata");
 
-        float x = (float)luaL_checknumber(L, 3);
-        float y = (float)luaL_checknumber(L, 4);
-        float z = (float)luaL_checknumber(L, 5);
-        float u = (float)luaL_optnumber(L, 6, 0);
-        float v = (float)luaL_optnumber(L, 7, 0);
-        u8 r = (u8)luaL_optinteger(L, 8, 255);
-        u8 g = (u8)luaL_optinteger(L, 9, 255);
-        u8 b = (u8)luaL_optinteger(L, 10, 255);
-        u8 a = (u8)luaL_optinteger(L, 11, 255);
-        u8 fr = (u8)luaL_optinteger(L, 12, 0);
-        u8 fg = (u8)luaL_optinteger(L, 13, 0);
-        u8 fb = (u8)luaL_optinteger(L, 14, 0);
-        u8 fa = (u8)luaL_optinteger(L, 15, 0);
+        RenMatrix mat{};
+        for (int i = 0; i < 16; i++) {
+            lua_rawgeti(L, 2, i + 1);
+            mat.arr[i] = (float)luaL_checknumber(L, -1);
+            lua_pop(L, 1);
+        }
 
-        vertices[index - 1].pos[0] = x;
-        vertices[index - 1].pos[1] = y;
-        vertices[index - 1].pos[2] = z;
-        vertices[index - 1].uv[0] = u;
-        vertices[index - 1].uv[1] = v;
-        vertices[index - 1].color[0] = r;
-        vertices[index - 1].color[1] = g;
-        vertices[index - 1].color[2] = b;
-        vertices[index - 1].color[3] = a;
-        vertices[index - 1].fog[0] = fr;
-        vertices[index - 1].fog[1] = fg;
-        vertices[index - 1].fog[2] = fb;
-        vertices[index - 1].fog[3] = fa;
+        u32 id = (u32)luaL_checkinteger(L, 3);
 
-        return 0;
-    });
-    lua_setfield(L, -2, "write_at");
-
-    lua_pushcfunction(L, [](lua_State *L) -> int {
-        Vertex *vertices = (Vertex *)luax::field_touserdata(L, 1, "udata");
-        int length = (int)luaL_checkinteger(L, 2);
-        app::state->renderer.push(vertices, length);
+        map->draw(app->renderer, mat, sg_image{id});
         return 0;
     });
     lua_setfield(L, -2, "draw");
 
     lua_createtable(L, 0, 1);
     lua_pushcfunction(L, [](lua_State *L) -> int {
-        Vertex *vertices = (Vertex *)luax::field_touserdata(L, 1, "udata");
-        delete[] vertices;
+        Tilemap *map = (Tilemap *)luax_field_touserdata(L, 1, "udata");
+        map->destroy();
+        delete map;
         return 0;
     });
     lua_setfield(L, -2, "__gc");
@@ -266,25 +257,23 @@ static int make_vertex_array(lua_State *L) {
     return 1;
 }
 
-int lib(lua_State *L) {
+int gfx_lib(lua_State *L) {
     const luaL_Reg libs[] = {
-        {"begin_draw", begin_draw},
-        {"end_draw", end_draw},
-        {"draw_count", draw_count},
-        {"bind_mvp", bind_mvp},
-        {"bind_white_texture", bind_white_texture},
-        {"bind_texture", bind_texture},
-        {"v3_t2", v3_t2},
-        {"v3_t2_c4", v3_t2_c4},
-        {"v3_t2_c4_f4", v3_t2_c4_f4},
-        {"make_texture", make_texture},
-        {"make_font", make_font},
-        {"make_vertex_array", make_vertex_array},
+        {"begin_draw", gfx_begin_draw},
+        {"end_draw", gfx_end_draw},
+        {"draw_count", gfx_draw_count},
+        {"bind_mvp", gfx_bind_mvp},
+        {"bind_white_texture", gfx_bind_white_texture},
+        {"bind_texture", gfx_bind_texture},
+        {"v3_t2", gfx_v3_t2},
+        {"v3_t2_c4", gfx_v3_t2_c4},
+        {"v3_t2_c4_f4", gfx_v3_t2_c4_f4},
+        {"make_texture", gfx_make_texture},
+        {"make_font", gfx_make_font},
+        {"make_tilemap", gfx_make_tilemap},
         {nullptr, nullptr},
     };
 
     luaL_newlib(L, libs);
     return 1;
 }
-
-} // namespace gfx

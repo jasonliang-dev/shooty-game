@@ -95,7 +95,8 @@ local function create_graph(self, export, layer, firstgid)
                 self.graph_nodes[(y - 1) * export.width + x] = {
                     x = x - 1,
                     y = y - 1,
-                    cost = 1 / 0,
+                    f = 0,
+                    g = 0,
                     visited = false,
                 }
             end
@@ -200,11 +201,10 @@ function Tilemap:point_collision(x, y)
     error "unreachable"
 end
 
--- cost is distance^2
-local function tile_cost(ax, ay, bx, by)
+local function heuristic(ax, ay, bx, by)
     local dx = bx - ax
     local dy = ay - by
-    return dx * dx + dy + dy
+    return math.sqrt(dx * dx + dy * dy)
 end
 
 local function tile_neighbors(self, x, y)
@@ -222,7 +222,7 @@ local function tile_neighbors(self, x, y)
     return neighbors
 end
 
-function Tilemap:dijkstra(start_x, start_y, end_x, end_y)
+function Tilemap:a_star(start_x, start_y, end_x, end_y)
     start_x, start_y = math.floor(start_x), math.floor(start_y)
     end_x, end_y = math.floor(end_x), math.floor(end_y)
 
@@ -234,7 +234,8 @@ function Tilemap:dijkstra(start_x, start_y, end_x, end_y)
     end
 
     for _, node in pairs(self.graph_nodes) do
-        node.cost = 1 / 0
+        node.g = 0
+        node.f = 1 / 0
         node.parent = nil
         node.visited = false
     end
@@ -243,10 +244,11 @@ function Tilemap:dijkstra(start_x, start_y, end_x, end_y)
 
     local begin = self.graph_nodes[start_y * self.width + start_x + 1]
     if not begin then return end
-    begin.cost = tile_cost(start_x, start_y, end_x, end_y)
+    begin.g = 0
+    begin.f = heuristic(start_x, start_y, end_x, end_y)
     begin.visited = true
 
-    open:push_min(begin, begin.cost)
+    open:push_min(begin, begin.f)
 
     while open:count() ~= 0 do
         local top = open:pop_min()
@@ -263,14 +265,39 @@ function Tilemap:dijkstra(start_x, start_y, end_x, end_y)
         for _, node in ipairs(neighbors) do
             if node.visited then goto continue end
 
-            node.cost = node.cost + tile_cost(node.x, node.y, end_x, end_y)
+            node.f = heuristic(node.x, node.y, end_x, end_y)
             node.parent = top
             node.visited = true
-            open:push_min(node, node.cost)
+            open:push_min(node, node.f)
 
             ::continue::
         end
     end
+end
+
+function Tilemap:point_move(x, y, dx, dy, sub_steps)
+    sub_steps = sub_steps or 4
+    dx, dy = dx / sub_steps, dy / sub_steps
+
+    local tx, ty
+    local collided = false
+    for i = 1, sub_steps do
+        tx, ty = x, y
+        x = x + dx
+        if self:point_collision(x, y) then
+            x, y = tx, ty
+            collided = true
+        end
+
+        tx, ty = x, y
+        y = y + dy
+        if self:point_collision(x, y) then
+            x, y = tx, ty
+            collided = true
+        end
+    end
+
+    return x, y, collided
 end
 
 function Tilemap:draw()

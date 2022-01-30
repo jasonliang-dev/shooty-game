@@ -9,18 +9,25 @@ function Plant:new(x, z, name)
     self.z = z
     self.uv = atl_entities:uv(name)
     self.spring = Spring()
-    self.hot = false
+end
+
+local function squish(self, entity)
+    local d = lume.distance(entity.x, entity.z, self.x, self.z)
+    if d < 0.8 and not self.hot then
+        self.spring:pull(0.05)
+        self.hot = entity.id
+    elseif d > 0.8 and self.hot == entity.id then
+        self.hot = nil
+    end
 end
 
 function Plant:update(dt)
     local player = self.group.player
+    local enemies = self.group:get_by_classname "BasicEnemy"
 
-    local d = lume.distance(player.x, player.z, self.x, self.z)
-    if d < 0.8 and not self.hot then
-        self.spring:pull(0.05)
-        self.hot = true
-    elseif d > 0.8 and self.hot then
-        self.hot = false
+    squish(self, player)
+    for _, enemy in pairs(enemies) do
+        squish(self, enemy)
     end
 
     if not self.hot then
