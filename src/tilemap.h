@@ -13,7 +13,7 @@ struct Tilemap {
     bool try_create(const char *filename, const Tileset *tileset);
     void destroy();
 
-    bool point_collision(vec2 point);
+    bool point_collision(float x, float y);
 
     struct PointMoveResult {
         float x;

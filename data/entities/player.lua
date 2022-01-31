@@ -14,7 +14,7 @@ Player.classname = "Player"
 
 function Player:new(desc)
     self.camera = desc.camera
-    -- self.map = desc.map
+    self.map = desc.map
 
     self.x = desc.x
     self.z = desc.z
@@ -117,9 +117,7 @@ function Player:fsm_walk(dt)
         self.fsm:transition "dash"
     end
 
-    -- self.x, self.z = self.map:point_move(self.x, self.z, self.dx * 5 * dt, self.dz * 5 * dt)
-    self.x = self.x + self.dx * 5 * dt
-    self.z = self.z + self.dz * 5 * dt
+    self.x, self.z = self.map:point_move(self.x, self.z, self.dx * 5 * dt, self.dz * 5 * dt, 4)
 end
 
 function Player:fsm_enter_dash()
@@ -128,9 +126,7 @@ end
 
 function Player:fsm_dash(dt)
     if self.dash_time > 0 then
-        -- self.x, self.z = self.map:point_move(self.x, self.z, self.dx * 9 * dt, self.dz * 9 * dt)
-        self.x = self.x + self.dx * 9 * dt
-        self.z = self.z + self.dz * 9 * dt
+        self.x, self.z = self.map:point_move(self.x, self.z, self.dx * 9 * dt, self.dz * 9 * dt, 4)
         self.dash_time = self.dash_time - dt
     else
         self.fsm:transition "idle"

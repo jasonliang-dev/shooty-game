@@ -24,8 +24,8 @@ static int gfx_draw_count(lua_State *L) {
 static int gfx_bind_mvp(lua_State *L) {
     RenMatrix m{};
 
-    lua_pushnil(L);
-    for (int i = 0; lua_next(L, 1); i++) {
+    for (int i = 0; i < 16; i++) {
+        lua_rawgeti(L, 1, i + 1);
         m.arr[i] = (float)luaL_checknumber(L, -1);
         lua_pop(L, 1);
     }

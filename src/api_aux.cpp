@@ -130,7 +130,7 @@ static int aux_make_tilemap(lua_State *L) {
         return 0;
     }
 
-    lua_createtable(L, 0, 3);
+    lua_createtable(L, 0, 5);
 
     lua_pushlightuserdata(L, map);
     lua_setfield(L, -2, "udata");
@@ -151,6 +151,33 @@ static int aux_make_tilemap(lua_State *L) {
         return 0;
     });
     lua_setfield(L, -2, "draw");
+
+    lua_pushcfunction(L, [](lua_State *L) -> int {
+        Tilemap *map = (Tilemap *)luax_field_touserdata(L, 1, "udata");
+
+        float x = (float)luaL_checknumber(L, 2);
+        float y = (float)luaL_checknumber(L, 3);
+        lua_pushboolean(L, map->point_collision(x, y));
+        return 1;
+    });
+    lua_setfield(L, -2, "point_collision");
+
+    lua_pushcfunction(L, [](lua_State *L) -> int {
+        Tilemap *map = (Tilemap *)luax_field_touserdata(L, 1, "udata");
+
+        float x = (float)luaL_checknumber(L, 2);
+        float y = (float)luaL_checknumber(L, 3);
+        float dx = (float)luaL_checknumber(L, 4);
+        float dy = (float)luaL_checknumber(L, 5);
+        int sub_steps = (int)luaL_checkinteger(L, 6);
+
+        Tilemap::PointMoveResult res = map->point_move(vec2(x, y), vec2(dx, dy), sub_steps);
+        lua_pushnumber(L, res.x);
+        lua_pushnumber(L, res.y);
+        lua_pushboolean(L, res.collided);
+        return 3;
+    });
+    lua_setfield(L, -2, "point_move");
 
     lua_createtable(L, 0, 1);
     lua_pushcfunction(L, [](lua_State *L) -> int {

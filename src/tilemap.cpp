@@ -1,6 +1,7 @@
 #include "tilemap.h"
 #include "deps/cute_tiled.h"
 #include <string.h>
+#include <math.h>
 
 bool Tilemap::try_create(const char *filename, const Tileset *tileset) {
     struct LayerDesc {
@@ -134,6 +135,78 @@ bool Tilemap::try_create(const char *filename, const Tileset *tileset) {
 void Tilemap::destroy() {
     sg_destroy_buffer(m_vbo);
     delete[] m_collision_map;
+}
+
+bool Tilemap::point_collision(float x, float y) {
+    int ix = (int)x;
+    float fx = x - ix;
+    int iy = (int)y;
+    float fy = y - iy;
+
+    TileCollisionType collision = m_collision_map[iy * m_width + ix];
+
+    switch (collision) {
+    case TILE_COLLISION_FULL:
+        return true;
+    case TILE_COLLISION_OUT_TOP_LEFT:
+        return fx <= 0.5 || fy <= 0.5;
+    case TILE_COLLISION_OUT_TOP:
+        return fy <= 0.5;
+    case TILE_COLLISION_OUT_TOP_RIGHT:
+        return fx > 0.5 || fy <= 0.5;
+    case TILE_COLLISION_OUT_LEFT:
+        return fx <= 0.5;
+    case TILE_COLLISION_OUT_RIGHT:
+        return fx > 0.5;
+    case TILE_COLLISION_OUT_BOTTOM_LEFT:
+        return fx <= 0.5 || fy > 0.5;
+    case TILE_COLLISION_OUT_BOTTOM:
+        return fy > 0.5;
+    case TILE_COLLISION_OUT_BOTTOM_RIGHT:
+        return fx > 0.5 || fy > 0.5;
+    case TILE_COLLISION_IN_TOP_LEFT:
+        return fx <= 0.5 && fy <= 0.5;
+    case TILE_COLLISION_IN_TOP_RIGHT:
+        return fx > 0.5 && fy <= 0.5;
+    case TILE_COLLISION_IN_BOTTOM_LEFT:
+        return fx <= 0.5 && fy > 0.5;
+    case TILE_COLLISION_IN_BOTTOM_RIGHT:
+        return fx > 0.5 && fy > 0.5;
+    default:
+        return false;
+    }
+}
+
+Tilemap::PointMoveResult Tilemap::point_move(vec2 point, vec2 delta,
+                                             int sub_steps) {
+    float dx = delta.x / sub_steps;
+    float dy = delta.y / sub_steps;
+
+    bool collided = false;
+
+    float x = point.x;
+    float y = point.y;
+    for (int i = 0; i < sub_steps; i++) {
+        float tx = x;
+        x += dx;
+        if (point_collision(x, y)) {
+            x = tx;
+            collided = true;
+        }
+
+        float ty = y;
+        y += dy;
+        if (point_collision(x, y)) {
+            y = ty;
+            collided = true;
+        }
+    }
+
+    return {
+        .x = x,
+        .y = y,
+        .collided = collided,
+    };
 }
 
 void Tilemap::draw(const Renderer &renderer, RenMatrix mvp, sg_image image) {

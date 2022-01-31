@@ -17,7 +17,7 @@ function RoomTest:new()
     -- local spawn = map_test:object_by_name "spawn"
     -- local enemy = map_test:object_by_name "enemy"
 
-    self.camera = Camera(5, 0, 5, quat.euler(math.pi / 6, 0, 0))
+    self.camera = Camera(0, 0, 0, quat.euler(math.pi / 6, 0, 0))
 
     self.group = EntityGroup()
     -- map_test:populate_entity_group(self.group)
@@ -31,10 +31,10 @@ function RoomTest:new()
     })
 
     self.player = self.group:add(Player, {
-        x = 5,
-        z = 5,
+        x = 10,
+        z = 8,
         camera = self.camera,
-        -- map = map_test,
+        map = tmx_lv1,
     })
 end
 
