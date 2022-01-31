@@ -18,3 +18,5 @@ struct vec2 {
 struct Rect {
     float x1, y1, x2, y2;
 };
+
+#define array_count(a) (sizeof(a) / sizeof((a)[0]))

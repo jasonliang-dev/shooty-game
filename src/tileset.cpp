@@ -12,7 +12,7 @@ bool Tileset::try_create(const char *filename) {
     const char *end = strrchr(filename, '/');
     int len = (int)(end - filename) + 1;
     memcpy(image_path, filename, len);
-    strncpy(image_path + len, tiled->image.ptr, 2048 - len);
+    strncpy(image_path + len, tiled->image.ptr, array_count(image_path) - len);
 
     m_texture.try_create(image_path);
 
@@ -65,7 +65,7 @@ void Tileset::destroy() {
 }
 
 Rect Tileset::uv(int id) const {
-    constexpr float inset = 0.004f;
+    constexpr float inset = 0.006f;
 
     int m = m_margin;
     int p = m_spacing;
@@ -88,3 +88,5 @@ Rect Tileset::uv(int id) const {
 
 TileCollisionType Tileset::collide_type(int id) const { return m_collide[id]; }
 sg_image Tileset::image() const { return m_texture.m_image; }
+int Tileset::tile_width() const { return m_tile_width; }
+int Tileset::tile_height() const { return m_tile_height; }

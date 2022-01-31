@@ -125,12 +125,12 @@ static int aux_make_tilemap(lua_State *L) {
     Tileset *tileset = (Tileset *)luax_field_touserdata(L, 2, "udata");
 
     Tilemap *map = new Tilemap;
-    if (!map->try_create(filename, tileset)) {
+    if (!map->try_create(filename, *tileset)) {
         delete map;
         return 0;
     }
 
-    lua_createtable(L, 0, 5);
+    lua_createtable(L, 0, 8);
 
     lua_pushlightuserdata(L, map);
     lua_setfield(L, -2, "udata");
@@ -171,13 +171,96 @@ static int aux_make_tilemap(lua_State *L) {
         float dy = (float)luaL_checknumber(L, 5);
         int sub_steps = (int)luaL_checkinteger(L, 6);
 
-        Tilemap::PointMoveResult res = map->point_move(vec2(x, y), vec2(dx, dy), sub_steps);
+        Tilemap::PointMoveResult res =
+            map->point_move(vec2(x, y), vec2(dx, dy), sub_steps);
         lua_pushnumber(L, res.x);
         lua_pushnumber(L, res.y);
         lua_pushboolean(L, res.collided);
         return 3;
     });
     lua_setfield(L, -2, "point_move");
+
+    lua_pushcfunction(L, [](lua_State *L) -> int {
+        Tilemap *map = (Tilemap *)luax_field_touserdata(L, 1, "udata");
+        const char *type = luaL_checkstring(L, 2);
+        Tilemap::MapObject obj = map->object_by_type(type);
+
+        if (!obj.type[0]) {
+            return 0;
+        }
+
+        lua_createtable(L, 0, 3);
+
+        lua_pushnumber(L, obj.x);
+        lua_setfield(L, -2, "x");
+
+        lua_pushnumber(L, obj.y);
+        lua_setfield(L, -2, "y");
+
+        lua_pushstring(L, obj.type);
+        lua_setfield(L, -2, "type");
+
+        return 1;
+    });
+    lua_setfield(L, -2, "object_by_type");
+
+    lua_pushcfunction(L, [](lua_State *L) -> int {
+        Tilemap *map = (Tilemap *)luax_field_touserdata(L, 1, "udata");
+        const char *type = luaL_checkstring(L, 2);
+
+        Tilemap::MapObject *objs = nullptr;
+        int object_count = map->objects(objs);
+
+        lua_newtable(L);
+
+        int len = 0;
+        for (int i = 0; i < object_count; i++) {
+            if (strcmp(objs[i].type, type) == 0) {
+                lua_createtable(L, 0, 3);
+
+                lua_pushnumber(L, objs[i].x);
+                lua_setfield(L, -2, "x");
+
+                lua_pushnumber(L, objs[i].y);
+                lua_setfield(L, -2, "y");
+
+                lua_pushstring(L, objs[i].type);
+                lua_setfield(L, -2, "type");
+
+                lua_rawseti(L, -2, len + 1);
+                len++;
+            }
+        }
+
+        return 1;
+    });
+    lua_setfield(L, -2, "objects_by_type");
+
+    lua_pushcfunction(L, [](lua_State *L) -> int {
+        Tilemap *map = (Tilemap *)luax_field_touserdata(L, 1, "udata");
+        Tilemap::MapObject *objs = nullptr;
+        int object_count = map->objects(objs);
+
+        lua_createtable(L, object_count, 0);
+
+        for (int i = 0; i < object_count; i++) {
+            lua_createtable(L, 0, 3);
+
+            lua_pushnumber(L, objs[i].x);
+            lua_setfield(L, -2, "x");
+
+            lua_pushnumber(L, objs[i].y);
+            lua_setfield(L, -2, "y");
+
+            lua_pushstring(L, objs[i].type);
+            lua_setfield(L, -2, "type");
+
+            lua_rawseti(L, -2, i + 1);
+        }
+
+        return 1;
+    });
+    lua_setfield(L, -2, "objects");
 
     lua_createtable(L, 0, 1);
     lua_pushcfunction(L, [](lua_State *L) -> int {

@@ -28,6 +28,8 @@ struct Tileset {
     Rect uv(int id) const;
     TileCollisionType collide_type(int id) const;
     sg_image image() const;
+    int tile_width() const;
+    int tile_height() const;
 
   private:
     Texture m_texture{};

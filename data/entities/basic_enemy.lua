@@ -5,7 +5,7 @@ local BasicEnemy = class()
 BasicEnemy.classname = "BasicEnemy"
 
 function BasicEnemy:new(desc)
-    -- self.map = desc.map
+    self.map = desc.map
 
     self.x = desc.x
     self.z = desc.z
@@ -24,7 +24,7 @@ end
 function BasicEnemy:update(dt)
     self.sprite:update(dt)
     local collided = false
-    -- self.x, self.z, collided = self.map:point_move(self.x, self.z, self.dx * 2 * dt, self.dz * 2 * dt)
+    self.x, self.z, collided = self.map:point_move(self.x, self.z, self.dx * 2 * dt, self.dz * 2 * dt, 4)
     if collided then
         self.dx = -self.dx
         self.dz = -self.dz

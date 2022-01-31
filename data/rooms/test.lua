@@ -14,25 +14,24 @@ local Camera = require "camera"
 local RoomTest = class()
 
 function RoomTest:new()
-    -- local spawn = map_test:object_by_name "spawn"
-    -- local enemy = map_test:object_by_name "enemy"
+    local spawn = tmx_lv1:object_by_type "spawn"
 
-    self.camera = Camera(0, 0, 0, quat.euler(math.pi / 6, 0, 0))
+    self.camera = Camera(spawn.x, 0, spawn.y, quat.euler(math.pi / 6, 0, 0))
 
     self.group = EntityGroup()
     -- map_test:populate_entity_group(self.group)
 
     self.group:add(BasicEnemy, {
-        x = 0,
-        z = 0,
+        x = spawn.x,
+        z = spawn.y,
         dx = -1,
         dz = 0,
-        -- map = map_test,
+        map = tmx_lv1,
     })
 
     self.player = self.group:add(Player, {
-        x = 10,
-        z = 8,
+        x = spawn.x,
+        z = spawn.y,
         camera = self.camera,
         map = tmx_lv1,
     })
