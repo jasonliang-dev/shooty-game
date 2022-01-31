@@ -343,6 +343,11 @@
          "spacing":4,
          "tilecount":144,
          "tileheight":16,
+         "tiles":[
+                {
+                 "id":1,
+                 "type":"out_top_left"
+                }],
          "tilewidth":16,
          "wangsets":[
                 {

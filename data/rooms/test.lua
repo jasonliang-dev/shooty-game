@@ -54,7 +54,7 @@ function RoomTest:draw()
     gfx.bind_mvp(view_projection)
 
     local mvp = mat.mul(mat.rotate(quat.euler(math.pi / 2, 0, 0)), view_projection)
-    map_test1:draw(mvp, atl_tiles.texture.id)
+    tmx_lv1:draw(mvp, tsx_tiles.texture_id)
     self.group:draw()
 end
 

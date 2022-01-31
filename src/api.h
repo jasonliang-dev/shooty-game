@@ -6,6 +6,7 @@
 
 int gfx_lib(lua_State *L);
 int sys_lib(lua_State *L);
+int aux_lib(lua_State *L);
 
 static void *luax_field_touserdata(lua_State *L, int arg, const char *key) {
     lua_getfield(L, arg, key);

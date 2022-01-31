@@ -26,7 +26,8 @@ template <> struct HashMapTraits<const char *> {
     }
 };
 
-template <typename K, typename V, typename Traits = HashMapTraits<K>> struct HashMap {
+template <typename K, typename V, typename Traits = HashMapTraits<K>>
+struct HashMap {
     HashMap() = default;
     HashMap(int capacity) { reserve(capacity); }
 
@@ -49,7 +50,8 @@ template <typename K, typename V, typename Traits = HashMapTraits<K>> struct Has
         for (int i = 0; i < m_capacity; i++) {
             if (other.m_table[i].type == SlotType::Occupied) {
                 new (m_table + i) KV(other.m_table[i]);
-            } else {
+            }
+            else {
                 m_table[i] = other.m_table[i];
             }
         }
@@ -64,7 +66,8 @@ template <typename K, typename V, typename Traits = HashMapTraits<K>> struct Has
             if (m_table[i].type == SlotType::Occupied) {
                 m_table[i].~KV();
                 m_table[i].type = SlotType::Unoccupied;
-            } else if (m_table[i].type == SlotType::Tombstone) {
+            }
+            else if (m_table[i].type == SlotType::Tombstone) {
                 m_table[i].type = SlotType::Unoccupied;
             }
         }
@@ -195,7 +198,8 @@ template <typename K, typename V, typename Traits = HashMapTraits<K>> struct Has
                 new (m_table + i) KV(k, v, SlotType::Occupied);
                 m_size++;
                 return;
-            } else if (m_table[i].type == SlotType::Tombstone) {
+            }
+            else if (m_table[i].type == SlotType::Tombstone) {
                 new (m_table + i) KV(k, v, SlotType::Occupied);
                 return;
             }
@@ -206,7 +210,8 @@ template <typename K, typename V, typename Traits = HashMapTraits<K>> struct Has
                 new (m_table + i) KV(k, v, SlotType::Occupied);
                 m_size++;
                 return;
-            } else if (m_table[i].type == SlotType::Tombstone) {
+            }
+            else if (m_table[i].type == SlotType::Tombstone) {
                 new (m_table + i) KV(k, v, SlotType::Occupied);
                 return;
             }
@@ -241,10 +246,12 @@ template <typename K, typename V, typename Traits = HashMapTraits<K>> struct Has
                 new (m_table + i) KV(k, V{}, SlotType::Occupied);
                 m_size++;
                 return m_table[i].value;
-            } else if (m_table[i].type == SlotType::Tombstone) {
+            }
+            else if (m_table[i].type == SlotType::Tombstone) {
                 new (m_table + i) KV(k, V{}, SlotType::Occupied);
                 return m_table[i].value;
-            } else if (Traits::equal(m_table[i].key, k)) {
+            }
+            else if (Traits::equal(m_table[i].key, k)) {
                 return m_table[i].value;
             }
         }
@@ -254,10 +261,12 @@ template <typename K, typename V, typename Traits = HashMapTraits<K>> struct Has
                 new (m_table + i) KV(k, V{}, SlotType::Occupied);
                 m_size++;
                 return m_table[i].value;
-            } else if (m_table[i].type == SlotType::Tombstone) {
+            }
+            else if (m_table[i].type == SlotType::Tombstone) {
                 new (m_table + i) KV(k, V{}, SlotType::Occupied);
                 return m_table[i].value;
-            } else if (Traits::equal(m_table[i].key, k)) {
+            }
+            else if (Traits::equal(m_table[i].key, k)) {
                 return m_table[i].value;
             }
         }
@@ -282,9 +291,11 @@ template <typename K, typename V, typename Traits = HashMapTraits<K>> struct Has
         for (int i = idx; i < m_capacity; i++) {
             if (m_table[i].type == SlotType::Tombstone) {
                 continue;
-            } else if (m_table[i].type == SlotType::Unoccupied) {
+            }
+            else if (m_table[i].type == SlotType::Unoccupied) {
                 return nullptr;
-            } else if (Traits::equal(m_table[i].key, k)) {
+            }
+            else if (Traits::equal(m_table[i].key, k)) {
                 return &m_table[i];
             }
         }
@@ -292,9 +303,11 @@ template <typename K, typename V, typename Traits = HashMapTraits<K>> struct Has
         for (int i = 0; i < idx; i++) {
             if (m_table[i].type == SlotType::Tombstone) {
                 continue;
-            } else if (m_table[i].type == SlotType::Unoccupied) {
+            }
+            else if (m_table[i].type == SlotType::Unoccupied) {
                 return nullptr;
-            } else if (Traits::equal(m_table[i].key, k)) {
+            }
+            else if (Traits::equal(m_table[i].key, k)) {
                 return &m_table[i];
             }
         }

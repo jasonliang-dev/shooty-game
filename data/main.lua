@@ -11,9 +11,12 @@ local vec3 = vec.vec3
 function core.init()
     atl_tiles = assert(Atlas "data/content/tiles.rtpa")
     atl_entities = assert(Atlas "data/content/entities.rtpa")
-    map_test1 = assert(gfx.make_tilemap "data/content/map.json")
-    fnt_normal = assert(gfx.make_font("data/content/times.ttf", 32))
-    fnt_small = assert(gfx.make_font("data/content/times.ttf", 20))
+    -- map_test1 = assert(gfx.make_tilemap "data/content/map.json")
+    fnt_normal = assert(aux.make_font("data/content/times.ttf", 32))
+    fnt_small = assert(aux.make_font("data/content/times.ttf", 20))
+
+    tsx_tiles = aux.make_tileset "data/content/tiles.json"
+    tmx_lv1 = aux.make_tilemap("data/content/lv1.json", tsx_tiles)
 
     rooms.start "test"
 end

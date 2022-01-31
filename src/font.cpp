@@ -67,19 +67,19 @@ bool Font::try_create(const char *filename, float size) {
     desc.data.subimage[0][0].ptr = rgba;
     desc.data.subimage[0][0].size = width * height * 4;
 
-    m_texture = sg_make_image(desc);
-    m_texture_width = width;
-    m_texture_height = height;
+    m_texture.m_image = sg_make_image(desc);
+    m_texture.m_width = width;
+    m_texture.m_height = height;
     m_size = size;
 
     delete[] ttf;
     delete[] bitmap;
     delete[] rgba;
-   
+
     return true;
 }
 
-void Font::destroy() { sg_destroy_image(m_texture); }
+void Font::destroy() { m_texture.destroy(); }
 
 float Font::width(const char *text) const {
     float width = 0;
@@ -116,11 +116,11 @@ float Font::print(Renderer &renderer, const PrintDesc &desc) const {
     u8 g = desc.color[1];
     u8 b = desc.color[2];
     u8 a = desc.color[3];
-    renderer.texture(m_texture);
+    renderer.texture(m_texture.m_image);
     while (*text) {
         stbtt_aligned_quad q{};
-        stbtt_GetPackedQuad(m_ascii, m_texture_width, m_texture_height, *text,
-                            &x, &y, &q, 0);
+        stbtt_GetPackedQuad(m_ascii, m_texture.m_width, m_texture.m_height,
+                            *text, &x, &y, &q, 0);
         renderer.push({{q.x0, q.y0, 0}, {q.s0, q.t0}, {r, g, b, a}, {}});
         renderer.push({{q.x0, q.y1, 0}, {q.s0, q.t1}, {r, g, b, a}, {}});
         renderer.push({{q.x1, q.y1, 0}, {q.s1, q.t1}, {r, g, b, a}, {}});

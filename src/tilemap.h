@@ -1,6 +1,6 @@
 #pragma once
 
-#include "deps/sokol_gfx.h"
+#include "tileset.h"
 #include "renderer.h"
 
 struct Tilemap {
@@ -10,7 +10,7 @@ struct Tilemap {
         float y;
     };
 
-    bool try_create(const char *filename);
+    bool try_create(const char *filename, const Tileset *tileset);
     void destroy();
 
     bool point_collision(vec2 point);
@@ -27,8 +27,7 @@ struct Tilemap {
 
   private:
     sg_buffer m_vbo{};
-
-    u8 *m_collision = nullptr;
+    TileCollisionType *m_collision_map = nullptr;
     int m_width = 0;
     int m_height = 0;
     int m_tile_count = 0;

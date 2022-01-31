@@ -5,6 +5,7 @@
  </editorsettings>
  <tileset firstgid="1" name="tiles" tilewidth="16" tileheight="16" spacing="4" margin="2" tilecount="144" columns="12">
   <image source="tiles.png" width="256" height="256"/>
+  <tile id="1" type="out top left"/>
   <wangsets>
    <wangset name="grass" type="corner" tile="-1">
     <wangcolor name="land" color="#ff0000" tile="-1" probability="1"/>

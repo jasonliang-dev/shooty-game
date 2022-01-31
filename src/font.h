@@ -4,6 +4,7 @@
 #include "deps/stb_rect_pack.h"
 #include "deps/stb_truetype.h"
 #include "renderer.h"
+#include "texture.h"
 
 enum FontAlign : u8 {
     FONT_ALIGN_LEFT = 1 << 0,
@@ -35,8 +36,6 @@ struct Font {
 
     stbtt_packedchar m_ascii[MAX_CHARS]{};
     stbtt_fontinfo m_info{};
-    sg_image m_texture{};
-    int m_texture_width = 0;
-    int m_texture_height = 0;
+    Texture m_texture{};
     float m_size = 0;
 };

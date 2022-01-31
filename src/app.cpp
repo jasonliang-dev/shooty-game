@@ -15,7 +15,8 @@ void app_init(void) {
     luaL_openlibs(L);
     luaL_requiref(L, "sys", sys_lib, true);
     luaL_requiref(L, "gfx", gfx_lib, true);
-    lua_pop(L, 2);
+    luaL_requiref(L, "aux", aux_lib, true);
+    lua_pop(L, 3);
 
     lua_newtable(L);
     lua_setglobal(L, "core");
@@ -34,6 +35,8 @@ void app_init(void) {
         abort();
     }
 
+    // message handler when using lua_pcall
+    // always at bottom of lua stack
     lua_pushcfunction(L, [](lua_State *L) -> int {
         // print(tostring(err))
         lua_getglobal(L, "print");
@@ -75,7 +78,7 @@ void app_init(void) {
 void app_event(const sapp_event *e) {
     lua_State *L = app->lua;
 
-    // xpcall(core.event, l_msgh, ...)
+    // xpcall(core.event, msgh, ...)
     lua_getglobal(L, "core");
     lua_getfield(L, -1, "event");
     lua_remove(L, -2);
@@ -137,7 +140,7 @@ void app_frame(void) {
 
     lua_State *L = app->lua;
 
-    // xpcall(core.frame, l_msgh)
+    // xpcall(core.frame, msgh)
     lua_getglobal(L, "core");
     lua_getfield(L, -1, "frame");
     lua_remove(L, -2);
@@ -155,4 +158,3 @@ void app_cleanup(void) {
     delete app;
     sg_shutdown();
 }
-

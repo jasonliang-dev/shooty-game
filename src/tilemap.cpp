@@ -2,9 +2,10 @@
 #include "deps/cute_tiled.h"
 #include <string.h>
 
-bool Tilemap::try_create(const char *filename) {
+bool Tilemap::try_create(const char *filename, const Tileset *tileset) {
     struct LayerDesc {
-        const cute_tiled_tileset_t *tileset;
+        const Tileset *tileset;
+        int firstgid;
         const int *data;
         int data_count;
         int map_width;
@@ -13,13 +14,14 @@ bool Tilemap::try_create(const char *filename) {
         int tile_height;
     };
 
-    struct CreateLayerResult {
+    struct LayerResult {
         sg_buffer vbo;
+        TileCollisionType *collision_map;
         int tile_count;
     };
 
-    const auto create_layer = [](const LayerDesc &desc) -> CreateLayerResult {
-        const cute_tiled_tileset_t &tileset = *desc.tileset;
+    const auto create_layer = [](const LayerDesc &desc) -> LayerResult {
+        const Tileset &tileset = *desc.tileset;
 
         int tile_count = 0;
         for (int i = 0; i < desc.map_width * desc.map_height; i++) {
@@ -29,6 +31,8 @@ bool Tilemap::try_create(const char *filename) {
         }
 
         RenVertex *vertices = new RenVertex[tile_count * 4]{};
+        TileCollisionType *collision_map =
+            new TileCollisionType[desc.map_width * desc.map_height]{};
 
         int vertex_count = 0;
         for (int y = 0; y < desc.map_height; y++) {
@@ -38,31 +42,11 @@ bool Tilemap::try_create(const char *filename) {
                     continue;
                 }
 
-                int id = cute_tiled_unset_flags(index) - tileset.firstgid;
-                float atlas_x = (float)(id % tileset.columns);
-                float atlas_y = (float)(id / tileset.columns);
+                int id = cute_tiled_unset_flags(index) - desc.firstgid;
 
-                // bleeding near tile edges
-                constexpr float inset = 0.0001f;
-
-                Rect uv = {
-                    .x1 =
-                        inset + (tileset.margin + (atlas_x * tileset.spacing) +
-                                 (atlas_x * desc.tile_width)) /
-                                    tileset.imagewidth,
-                    .y1 =
-                        inset + (tileset.margin + (atlas_y * tileset.spacing) +
-                                 (atlas_y * desc.tile_height)) /
-                                    tileset.imageheight,
-                    .x2 =
-                        -inset + (tileset.margin + (atlas_x * tileset.spacing) +
-                                  ((atlas_x + 1) * desc.tile_width)) /
-                                     tileset.imagewidth,
-                    .y2 =
-                        -inset + (tileset.margin + (atlas_y * tileset.spacing) +
-                                  ((atlas_y + 1) * desc.tile_height)) /
-                                     tileset.imageheight,
-                };
+                collision_map[(y * desc.map_width) + x] =
+                    tileset.collide_type(id);
+                Rect uv = tileset.uv(id);
 
                 vertices[vertex_count + 0] = {
                     .pos = {(float)x + 0, (float)y + 0, 0},
@@ -106,6 +90,7 @@ bool Tilemap::try_create(const char *filename) {
 
         return {
             .vbo = vbo,
+            .collision_map = collision_map,
             .tile_count = tile_count,
         };
     };
@@ -122,8 +107,9 @@ bool Tilemap::try_create(const char *filename) {
     for (const cute_tiled_layer_t *layer = tiled->layers; layer;
          layer = layer->next) {
         if (strcmp(layer->type.ptr, "tilelayer") == 0) {
-            CreateLayerResult res = create_layer({
-                .tileset = tiled->tilesets,
+            LayerResult res = create_layer({
+                .tileset = tileset,
+                .firstgid = tiled->tilesets->firstgid,
                 .data = layer->data,
                 .data_count = layer->data_count,
                 .map_width = tiled->width,
@@ -133,6 +119,7 @@ bool Tilemap::try_create(const char *filename) {
             });
 
             m_vbo = res.vbo;
+            m_collision_map = res.collision_map;
             m_tile_count = res.tile_count;
         }
     }
@@ -144,7 +131,10 @@ bool Tilemap::try_create(const char *filename) {
     return true;
 }
 
-void Tilemap::destroy() {}
+void Tilemap::destroy() {
+    sg_destroy_buffer(m_vbo);
+    delete[] m_collision_map;
+}
 
 void Tilemap::draw(const Renderer &renderer, RenMatrix mvp, sg_image image) {
     sg_apply_pipeline(renderer.pip());

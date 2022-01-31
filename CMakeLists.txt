@@ -15,10 +15,13 @@ find_package(OpenGL REQUIRED)
 add_executable(${PROJECT_NAME}
     src/api_gfx.cpp
     src/api_sys.cpp
+    src/api_aux.cpp
     src/app.cpp
     src/font.cpp
     src/renderer.cpp
+    src/texture.cpp
     src/tilemap.cpp
+    src/tileset.cpp
     src/main.cpp
 )
 
