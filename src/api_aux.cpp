@@ -290,7 +290,7 @@ static int aux_make_tilemap(lua_State *L) {
             lua_pushnumber(L, path[i].y);
             lua_setfield(L, -2, "y");
 
-            lua_rawseti(L, -2, i + 1);
+            lua_rawseti(L, -2, path.size() - i);
         }
 
         path.destroy();

@@ -2,6 +2,7 @@
 
 #include "tilemap.h"
 #include "deps/cute_tiled.h"
+#include <float.h>
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
@@ -145,9 +146,13 @@ const char *Tilemap::try_create(const char *filename, const Tileset &tileset) {
 
 void Tilemap::destroy() {
     sg_destroy_buffer(m_vbo);
-    delete[] m_graph;
+
     delete[] m_collision_map;
     delete[] m_objects;
+
+    delete[] m_graph;
+    m_frontier.destroy();
+    m_keep_alive.destroy();
 }
 
 bool Tilemap::point_collision(float x, float y) const {
@@ -241,7 +246,7 @@ int Tilemap::objects(MapObject *&out) const {
 
 bool Tilemap::a_star(PODVector<vec2> &out, int start_x, int start_y, int end_x,
                      int end_y) {
-    const auto heuristic = [](int ax, int ay, int bx, int by) {
+    const auto distance = [](int ax, int ay, int bx, int by) {
         float dx = (float)abs(ax - bx);
         float dy = (float)abs(ay - by);
         return sqrtf(dx * dx + dy * dy);
@@ -272,11 +277,14 @@ bool Tilemap::a_star(PODVector<vec2> &out, int start_x, int start_y, int end_x,
         return neighbor_count;
     };
 
+    m_keep_alive.clear();
+    m_frontier.clear();
+
     for (int i = 0; i < m_width * m_height; i++) {
-        m_graph[i].g_cost = 0;
-        m_graph[i].h_cost = 0;
+        m_graph[i].f_cost = 0;
+        m_graph[i].g_cost = FLT_MAX;
         m_graph[i].visited = false;
-        m_graph[i].parent = nullptr;
+        m_graph[i].parent = -1;
     }
 
     if (start_x == end_x && start_y == end_y) {
@@ -289,20 +297,26 @@ bool Tilemap::a_star(PODVector<vec2> &out, int start_x, int start_y, int end_x,
         return false;
     }
 
-    begin->h_cost = heuristic(start_x, start_y, end_x, end_y);
+    begin->g_cost = 0;
+    begin->f_cost = distance(start_x, start_y, end_x, end_y);
     begin->visited = true;
-    m_open_list.push_min(begin, begin->h_cost);
+    m_keep_alive.push_back(*begin);
+    m_frontier.push_min(m_keep_alive.size() - 1, begin->f_cost);
 
-    while (m_open_list.size()) {
-        GraphNode *top = m_open_list.pop_min();
+    while (m_frontier.size()) {
+        int top_ptr = m_frontier.pop_min();
+        GraphNode *top = &m_keep_alive[top_ptr];
+        if (top->invalid) {
+            continue;
+        }
 
         if (top->x == end_x && top->y == end_y) {
-            while (top) {
-                out.push_back(vec2((float)top->x, (float)top->y));
-                top = top->parent;
+            while (top_ptr != -1) {
+                GraphNode *node = &m_keep_alive[top_ptr];
+                out.push_back(vec2((float)node->x, (float)node->y));
+                top_ptr = node->parent;
             }
 
-            m_open_list.clear();
             return true;
         }
 
@@ -310,16 +324,31 @@ bool Tilemap::a_star(PODVector<vec2> &out, int start_x, int start_y, int end_x,
         int neighbor_count = fill_neighbors(neighbors, top->x, top->y);
 
         for (int i = 0; i < neighbor_count; i++) {
-            GraphNode *node = neighbors[i];
-            if (node->visited) {
-                continue;
-            }
+            GraphNode *neighbor = neighbors[i];
 
-            node->g_cost += node->tile_cost;
-            node->h_cost = heuristic(node->x, node->y, end_x, end_y);
-            node->parent = top;
-            node->visited = true;
-            m_open_list.push_min(node, node->g_cost + node->h_cost);
+            float tentative =
+                top->g_cost + neighbor->tile_cost +
+                distance(neighbor->x, neighbor->y, top->x, top->y);
+
+            if (tentative < neighbor->g_cost) {
+                neighbor->g_cost = tentative;
+                neighbor->f_cost =
+                    neighbor->g_cost +
+                    distance(neighbor->x, neighbor->y, end_x, end_y);
+                neighbor->parent = top_ptr;
+                neighbor->visited = true;
+
+                int *arr = m_frontier.data();
+                for (int i = 0; i < m_frontier.size(); i++) {
+                    GraphNode *node = &m_keep_alive[arr[i]];
+                    if (node->x == neighbor->x && node->y == neighbor->y) {
+                        node->invalid = true;
+                    }
+                }
+
+                m_keep_alive.push_back(*neighbor);
+                m_frontier.push_min(m_keep_alive.size() - 1, neighbor->f_cost);
+            }
         }
     }
 
