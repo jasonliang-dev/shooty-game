@@ -1,12 +1,17 @@
+#define _CRT_SECURE_NO_WARNINGS
+
 #include "tileset.h"
 #include "deps/cute_tiled.h"
 #include "texture.h"
 #include <stdio.h>
 #include <string.h>
 
-bool Tileset::try_create(const char *filename) {
+const char *Tileset::try_create(const char *filename) {
     cute_tiled_tileset_t *tiled =
         cute_tiled_load_external_tileset(filename, nullptr);
+    if (!tiled) {
+        return "failed loading tileset";
+    }
 
     char image_path[2048]{};
     const char *end = strrchr(filename, '/');
@@ -14,7 +19,10 @@ bool Tileset::try_create(const char *filename) {
     memcpy(image_path, filename, len);
     strncpy(image_path + len, tiled->image.ptr, array_count(image_path) - len);
 
-    m_texture.try_create(image_path);
+    const char *err = m_texture.try_create(image_path);
+    if (err) {
+        return err;
+    }
 
     m_collide = new TileCollisionType[tiled->tilecount]{};
 
@@ -56,7 +64,7 @@ bool Tileset::try_create(const char *filename) {
     m_tile_height = tiled->tileheight;
 
     cute_tiled_free_external_tileset(tiled);
-    return true;
+    return nullptr;
 }
 
 void Tileset::destroy() {

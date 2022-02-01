@@ -1,18 +1,19 @@
+#define _CRT_SECURE_NO_WARNINGS
+
 #include "tilemap.h"
 #include "deps/cute_tiled.h"
 #include <math.h>
-#include <string.h>
 #include <stdio.h>
+#include <string.h>
 
-bool Tilemap::try_create(const char *filename, const Tileset &tileset) {
+const char *Tilemap::try_create(const char *filename, const Tileset &tileset) {
     cute_tiled_map_t *tiled = cute_tiled_load_map_from_file(filename, nullptr);
     if (!tiled) {
-        return false;
+        return "failed loading tilemap";
     }
 
-    // only handling one tileset
     if (!tiled->tilesets || tiled->tilesets->next) {
-        return false;
+        return "tilemap should only have one tileset";
     }
 
     int firstgid = tiled->tilesets->firstgid;
@@ -21,10 +22,8 @@ bool Tilemap::try_create(const char *filename, const Tileset &tileset) {
          layer = layer->next) {
         if (strcmp(layer->type.ptr, "tilelayer") == 0) {
             if (m_collision_map) {
-                sg_destroy_buffer(m_vbo);
-                delete[] m_collision_map;
-                delete[] m_objects;
-                return false;
+                destroy();
+                return "tilemap should only have one tile layer";
             }
 
             for (int i = 0; i < tiled->width * tiled->height; i++) {
@@ -35,6 +34,8 @@ bool Tilemap::try_create(const char *filename, const Tileset &tileset) {
 
             m_collision_map =
                 new TileCollisionType[tiled->width * tiled->height]{};
+
+            m_graph = new GraphNode[tiled->width * tiled->height]{};
 
             RenVertex *vertices = new RenVertex[m_tile_count * 4]{};
 
@@ -48,8 +49,24 @@ bool Tilemap::try_create(const char *filename, const Tileset &tileset) {
 
                     int id = cute_tiled_unset_flags(index) - firstgid;
 
-                    m_collision_map[(y * tiled->width) + x] =
-                        tileset.collide_type(id);
+                    TileCollisionType collide_type = tileset.collide_type(id);
+                    m_collision_map[y * tiled->width + x] = collide_type;
+
+                    m_graph[y * tiled->width + x].x = x;
+                    m_graph[y * tiled->width + x].y = y;
+
+                    switch (collide_type) {
+                    case TILE_COLLISION_FULL:
+                        m_graph[y * tiled->width + x].tile_cost = -1;
+                        break;
+                    case TILE_COLLISION_NONE:
+                        m_graph[y * tiled->width + x].tile_cost = 1;
+                        break;
+                    default:
+                        m_graph[y * tiled->width + x].tile_cost = 10;
+                        break;
+                    }
+
                     Rect uv = tileset.uv(id);
 
                     vertices[vertex_count + 0] = {
@@ -93,11 +110,10 @@ bool Tilemap::try_create(const char *filename, const Tileset &tileset) {
 
             delete[] vertices;
         } else if (strcmp(layer->type.ptr, "objectgroup") == 0) {
+            // append more objects?
             if (m_objects) {
-                sg_destroy_buffer(m_vbo);
-                delete[] m_collision_map;
-                delete[] m_objects;
-                return false;
+                destroy();
+                return "tilemap should only have one object group";
             }
 
             for (cute_tiled_object_t *obj = layer->objects; obj;
@@ -124,11 +140,12 @@ bool Tilemap::try_create(const char *filename, const Tileset &tileset) {
     m_height = tiled->height;
 
     cute_tiled_free_map(tiled);
-    return true;
+    return nullptr;
 }
 
 void Tilemap::destroy() {
     sg_destroy_buffer(m_vbo);
+    delete[] m_graph;
     delete[] m_collision_map;
     delete[] m_objects;
 }
@@ -141,33 +158,35 @@ bool Tilemap::point_collision(float x, float y) const {
 
     TileCollisionType collision = m_collision_map[iy * m_width + ix];
 
+    constexpr float pad = 0.75f;
+    constexpr float nad = 1 - pad;
     switch (collision) {
     case TILE_COLLISION_FULL:
         return true;
     case TILE_COLLISION_OUT_TOP_LEFT:
-        return fx <= 0.5 || fy <= 0.5;
+        return fx <= nad || fy <= nad;
     case TILE_COLLISION_OUT_TOP:
-        return fy <= 0.5;
+        return fy <= nad;
     case TILE_COLLISION_OUT_TOP_RIGHT:
-        return fx > 0.5 || fy <= 0.5;
+        return fx > pad || fy <= nad;
     case TILE_COLLISION_OUT_LEFT:
-        return fx <= 0.5;
+        return fx <= nad;
     case TILE_COLLISION_OUT_RIGHT:
-        return fx > 0.5;
+        return fx > pad;
     case TILE_COLLISION_OUT_BOTTOM_LEFT:
-        return fx <= 0.5 || fy > 0.5;
+        return fx <= nad || fy > pad;
     case TILE_COLLISION_OUT_BOTTOM:
-        return fy > 0.5;
+        return fy > pad;
     case TILE_COLLISION_OUT_BOTTOM_RIGHT:
-        return fx > 0.5 || fy > 0.5;
+        return fx > pad || fy > pad;
     case TILE_COLLISION_IN_TOP_LEFT:
-        return fx <= 0.5 && fy <= 0.5;
+        return fx <= nad && fy <= nad;
     case TILE_COLLISION_IN_TOP_RIGHT:
-        return fx > 0.5 && fy <= 0.5;
+        return fx > pad && fy <= nad;
     case TILE_COLLISION_IN_BOTTOM_LEFT:
-        return fx <= 0.5 && fy > 0.5;
+        return fx <= nad && fy > pad;
     case TILE_COLLISION_IN_BOTTOM_RIGHT:
-        return fx > 0.5 && fy > 0.5;
+        return fx > pad && fy > pad;
     default:
         return false;
     }
@@ -218,6 +237,93 @@ Tilemap::MapObject Tilemap::object_by_type(const char *type) const {
 int Tilemap::objects(MapObject *&out) const {
     out = m_objects;
     return m_object_count;
+}
+
+bool Tilemap::a_star(PODVector<vec2> &out, int start_x, int start_y, int end_x,
+                     int end_y) {
+    const auto heuristic = [](int ax, int ay, int bx, int by) {
+        float dx = (float)abs(ax - bx);
+        float dy = (float)abs(ay - by);
+        return sqrtf(dx * dx + dy * dy);
+    };
+
+    const auto fill_neighbors = [this](GraphNode **neighbors, int x,
+                                       int y) -> int {
+        int neighbor_count = 0;
+        for (int r = y - 1; r <= y + 1; r++) {
+            for (int c = x - 1; c <= x + 1; c++) {
+                if (c == x && r == y) {
+                    continue;
+                }
+
+                if (c < 0 || c >= m_width || r < 0 || r >= m_height) {
+                    continue;
+                }
+
+                GraphNode *node = &m_graph[r * m_width + c];
+                if (node->tile_cost < 0) {
+                    continue;
+                }
+
+                neighbors[neighbor_count++] = node;
+            }
+        }
+
+        return neighbor_count;
+    };
+
+    for (int i = 0; i < m_width * m_height; i++) {
+        m_graph[i].g_cost = 0;
+        m_graph[i].h_cost = 0;
+        m_graph[i].visited = false;
+        m_graph[i].parent = nullptr;
+    }
+
+    if (start_x == end_x && start_y == end_y) {
+        out.push_back(vec2((float)start_x, (float)start_y));
+        return true;
+    }
+
+    GraphNode *begin = &m_graph[start_y * m_width + start_x];
+    if (begin->tile_cost < 0) {
+        return false;
+    }
+
+    begin->h_cost = heuristic(start_x, start_y, end_x, end_y);
+    begin->visited = true;
+    m_open_list.push_min(begin, begin->h_cost);
+
+    while (m_open_list.size()) {
+        GraphNode *top = m_open_list.pop_min();
+
+        if (top->x == end_x && top->y == end_y) {
+            while (top) {
+                out.push_back(vec2((float)top->x, (float)top->y));
+                top = top->parent;
+            }
+
+            m_open_list.clear();
+            return true;
+        }
+
+        GraphNode *neighbors[8];
+        int neighbor_count = fill_neighbors(neighbors, top->x, top->y);
+
+        for (int i = 0; i < neighbor_count; i++) {
+            GraphNode *node = neighbors[i];
+            if (node->visited) {
+                continue;
+            }
+
+            node->g_cost += node->tile_cost;
+            node->h_cost = heuristic(node->x, node->y, end_x, end_y);
+            node->parent = top;
+            node->visited = true;
+            m_open_list.push_min(node, node->g_cost + node->h_cost);
+        }
+    }
+
+    return false;
 }
 
 void Tilemap::draw(const Renderer &renderer, RenMatrix mvp,

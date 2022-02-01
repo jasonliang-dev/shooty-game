@@ -10,8 +10,9 @@ static int aux_make_texture(lua_State *L) {
     const char *filename = luaL_checkstring(L, 1);
 
     Texture tex;
-    if (!tex.try_create(filename)) {
-        return 0;
+    const char *err = tex.try_create(filename);
+    if (err) {
+        return luaL_error(L, "%s", err);
     }
 
     lua_createtable(L, 0, 4);
@@ -45,9 +46,10 @@ static int aux_make_font(lua_State *L) {
     const float size = (float)luaL_checknumber(L, 2);
 
     Font *font = new Font;
-    if (!font->try_create(filename, size)) {
+    const char *err = font->try_create(filename, size);
+    if (err) {
         delete font;
-        return 0;
+        return luaL_error(L, "%s", err);
     }
 
     lua_createtable(L, 0, 3);
@@ -94,9 +96,10 @@ static int aux_make_tileset(lua_State *L) {
     const char *filename = luaL_checkstring(L, 1);
 
     Tileset *tileset = new Tileset;
-    if (!tileset->try_create(filename)) {
+    const char *err = tileset->try_create(filename);
+    if (err) {
         delete tileset;
-        return 0;
+        return luaL_error(L, "%s", err);
     }
 
     lua_createtable(L, 0, 3);
@@ -125,12 +128,13 @@ static int aux_make_tilemap(lua_State *L) {
     Tileset *tileset = (Tileset *)luax_field_touserdata(L, 2, "udata");
 
     Tilemap *map = new Tilemap;
-    if (!map->try_create(filename, *tileset)) {
+    const char *err = map->try_create(filename, *tileset);
+    if (err) {
         delete map;
-        return 0;
+        return luaL_error(L, "%s", err);
     }
 
-    lua_createtable(L, 0, 8);
+    lua_createtable(L, 0, 9);
 
     lua_pushlightuserdata(L, map);
     lua_setfield(L, -2, "udata");
@@ -242,7 +246,6 @@ static int aux_make_tilemap(lua_State *L) {
         int object_count = map->objects(objs);
 
         lua_createtable(L, object_count, 0);
-
         for (int i = 0; i < object_count; i++) {
             lua_createtable(L, 0, 3);
 
@@ -261,6 +264,39 @@ static int aux_make_tilemap(lua_State *L) {
         return 1;
     });
     lua_setfield(L, -2, "objects");
+
+    lua_pushcfunction(L, [](lua_State *L) -> int {
+        Tilemap *map = (Tilemap *)luax_field_touserdata(L, 1, "udata");
+
+        int start_x = (int)luaL_checknumber(L, 2);
+        int start_y = (int)luaL_checknumber(L, 3);
+        int end_x = (int)luaL_checknumber(L, 4);
+        int end_y = (int)luaL_checknumber(L, 5);
+
+        PODVector<vec2> path;
+        bool path_found = map->a_star(path, start_x, start_y, end_x, end_y);
+        if (!path_found) {
+            path.destroy();
+            return 0;
+        }
+
+        lua_createtable(L, path.size(), 0);
+        for (int i = 0; i < path.size(); i++) {
+            lua_createtable(L, 0, 2);
+
+            lua_pushnumber(L, path[i].x);
+            lua_setfield(L, -2, "x");
+
+            lua_pushnumber(L, path[i].y);
+            lua_setfield(L, -2, "y");
+
+            lua_rawseti(L, -2, i + 1);
+        }
+
+        path.destroy();
+        return 1;
+    });
+    lua_setfield(L, -2, "a_star");
 
     lua_createtable(L, 0, 1);
     lua_pushcfunction(L, [](lua_State *L) -> int {

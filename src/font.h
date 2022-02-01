@@ -16,7 +16,7 @@ enum FontAlign : u8 {
 };
 
 struct Font {
-    bool try_create(const char *filename, float size);
+    const char *try_create(const char *filename, float size);
     void destroy();
 
     float width(const char *text) const;

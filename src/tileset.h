@@ -22,7 +22,7 @@ enum TileCollisionType : u8 {
 };
 
 struct Tileset {
-    bool try_create(const char *filename);
+    const char *try_create(const char *filename);
     void destroy();
 
     Rect uv(int id) const;

@@ -4,6 +4,7 @@
 #include "app.h"
 
 #define CUTE_TILED_IMPLEMENTATION
+#define CUTE_TILED_NO_EXTERNAL_TILESET_WARNING
 #include "deps/cute_tiled.h"
 
 #define MAKE_LIB

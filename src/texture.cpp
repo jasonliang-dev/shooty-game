@@ -1,13 +1,13 @@
 #include "texture.h"
 #include "deps/stb_image.h"
 
-bool Texture::try_create(const char *filename) {
+const char *Texture::try_create(const char *filename) {
     int width;
     int height;
     int channels;
     void *data = stbi_load(filename, &width, &height, &channels, 0);
     if (!data) {
-        return false;
+        return "failed loading image data";
     }
 
     sg_pixel_format pixel_format;
@@ -19,7 +19,7 @@ bool Texture::try_create(const char *filename) {
         pixel_format = SG_PIXELFORMAT_RGBA8;
         break;
     default:
-        return false;
+        return "pixel format not supported";
     }
 
     sg_image_desc desc{};
@@ -34,8 +34,7 @@ bool Texture::try_create(const char *filename) {
     m_height = height;
 
     stbi_image_free(data);
-    return true;
+    return nullptr;
 }
 
 void Texture::destroy() { sg_destroy_image(m_image); }
-

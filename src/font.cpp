@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <string.h>
 
-bool Font::try_create(const char *filename, float size) {
+const char *Font::try_create(const char *filename, float size) {
     const auto read_file = [](const char *filename) -> u8 * {
         FILE *handle = fopen(filename, "rb");
         if (!handle) {
@@ -26,7 +26,7 @@ bool Font::try_create(const char *filename, float size) {
     u8 *ttf = read_file(filename);
     int ok = stbtt_InitFont(&m_info, ttf, 0);
     if (!ok) {
-        return false;
+        return "failed font initialization";
     }
 
     const int width = 1024;
@@ -76,7 +76,7 @@ bool Font::try_create(const char *filename, float size) {
     delete[] bitmap;
     delete[] rgba;
 
-    return true;
+    return nullptr;
 }
 
 void Font::destroy() { m_texture.destroy(); }
