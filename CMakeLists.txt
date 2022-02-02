@@ -9,9 +9,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 
-set(OpenGL_GL_PREFERENCE GLVND)
-find_package(OpenGL REQUIRED)
-
 add_executable(${PROJECT_NAME}
     src/api_gfx.cpp
     src/api_sys.cpp
@@ -25,6 +22,11 @@ add_executable(${PROJECT_NAME}
     src/main.cpp
 )
 
-target_link_libraries(${PROJECT_NAME}
-  OpenGL::GL
-)
+if(WIN32)
+    add_compile_definitions(SOKOL_D3D11)
+elseif(EMSCRIPTEN)
+    add_compile_definitions(SOKOL_GLES2)
+    set_target_properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS
+        "--preload-file ../data@data"
+    )
+endif()

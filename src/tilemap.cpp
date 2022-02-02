@@ -2,6 +2,7 @@
 
 #include "tilemap.h"
 #include "deps/cute_tiled.h"
+#include "shd_default.h"
 #include <float.h>
 #include <math.h>
 #include <stdio.h>
@@ -37,6 +38,7 @@ const char *Tilemap::try_create(const char *filename, const Tileset &tileset) {
                 new TileCollisionType[tiled->width * tiled->height]{};
 
             m_graph = new GraphNode[tiled->width * tiled->height]{};
+            m_alive_indices = new int[tiled->width * tiled->height]{};
 
             RenVertex *vertices = new RenVertex[m_tile_count * 4]{};
 
@@ -122,7 +124,7 @@ const char *Tilemap::try_create(const char *filename, const Tileset &tileset) {
                 m_object_count++;
             }
 
-            m_objects = new MapObject[m_object_count]{};
+            m_objects = new TilemapObject[m_object_count]{};
 
             cute_tiled_object_t *obj = layer->objects;
             for (int i = 0; i < m_object_count; i++) {
@@ -151,6 +153,7 @@ void Tilemap::destroy() {
     delete[] m_objects;
 
     delete[] m_graph;
+    delete[] m_alive_indices;
     m_frontier.destroy();
     m_keep_alive.destroy();
 }
@@ -197,8 +200,8 @@ bool Tilemap::point_collision(float x, float y) const {
     }
 }
 
-Tilemap::PointMoveResult Tilemap::point_move(vec2 point, vec2 delta,
-                                             int sub_steps) const {
+TilemapPointMoveResult Tilemap::point_move(vec2 point, vec2 delta,
+                                           int sub_steps) const {
     float dx = delta.x / sub_steps;
     float dy = delta.y / sub_steps;
 
@@ -229,7 +232,7 @@ Tilemap::PointMoveResult Tilemap::point_move(vec2 point, vec2 delta,
     };
 }
 
-Tilemap::MapObject Tilemap::object_by_type(const char *type) const {
+TilemapObject Tilemap::object_by_type(const char *type) const {
     for (int i = 0; i < m_object_count; i++) {
         if (strcmp(m_objects[i].type, type) == 0) {
             return m_objects[i];
@@ -239,7 +242,7 @@ Tilemap::MapObject Tilemap::object_by_type(const char *type) const {
     return {};
 }
 
-int Tilemap::objects(MapObject *&out) const {
+int Tilemap::objects(TilemapObject *&out) const {
     out = m_objects;
     return m_object_count;
 }
@@ -285,11 +288,18 @@ bool Tilemap::a_star(PODVector<vec2> &out, int start_x, int start_y, int end_x,
         m_graph[i].g_cost = FLT_MAX;
         m_graph[i].visited = false;
         m_graph[i].parent = -1;
+
+        m_alive_indices[i] = -1;
     }
 
     if (start_x == end_x && start_y == end_y) {
         out.push_back(vec2((float)start_x, (float)start_y));
         return true;
+    }
+
+    GraphNode *goal = &m_graph[end_y * m_width + end_x];
+    if (goal->tile_cost < 0) {
+        return false;
     }
 
     GraphNode *begin = &m_graph[start_y * m_width + start_x];
@@ -302,6 +312,7 @@ bool Tilemap::a_star(PODVector<vec2> &out, int start_x, int start_y, int end_x,
     begin->visited = true;
     m_keep_alive.push_back(*begin);
     m_frontier.push_min(m_keep_alive.size() - 1, begin->f_cost);
+    m_alive_indices[start_y * m_width + start_x] = m_keep_alive.size() - 1;
 
     while (m_frontier.size()) {
         int top_ptr = m_frontier.pop_min();
@@ -338,16 +349,15 @@ bool Tilemap::a_star(PODVector<vec2> &out, int start_x, int start_y, int end_x,
                 neighbor->parent = top_ptr;
                 neighbor->visited = true;
 
-                int *arr = m_frontier.data();
-                for (int i = 0; i < m_frontier.size(); i++) {
-                    GraphNode *node = &m_keep_alive[arr[i]];
-                    if (node->x == neighbor->x && node->y == neighbor->y) {
-                        node->invalid = true;
-                    }
+                int live = m_alive_indices[neighbor->y * m_width + neighbor->x];
+                if (live != -1) {
+                    m_keep_alive[live].invalid = true;
                 }
 
                 m_keep_alive.push_back(*neighbor);
                 m_frontier.push_min(m_keep_alive.size() - 1, neighbor->f_cost);
+                m_alive_indices[neighbor->y * m_width + neighbor->x] =
+                    m_keep_alive.size() - 1;
             }
         }
     }
@@ -363,6 +373,7 @@ void Tilemap::draw(const Renderer &renderer, RenMatrix mvp,
         .index_buffer = renderer.quad_ibo(),
         .fs_images = {image},
     });
-    sg_apply_uniforms(SG_SHADERSTAGE_VS, 0, SG_RANGE(mvp));
+    vs_params_t uniforms = {.u_mvp = mvp};
+    sg_apply_uniforms(SG_SHADERSTAGE_VS, SLOT_vs_params, SG_RANGE(uniforms));
     sg_draw(0, m_tile_count * 6, 1);
 }

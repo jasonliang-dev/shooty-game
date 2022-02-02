@@ -58,7 +58,7 @@ void app_init(void) {
         exit(-1);
     });
 
-    app->renderer.create(9000);
+    app->renderer.create(12000);
 
     u8 rgba[4] = {255, 255, 255, 255};
     sg_image_data image_data{};

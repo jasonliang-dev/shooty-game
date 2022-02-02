@@ -95,7 +95,7 @@ float Font::width(const char *text) const {
 
 float Font::height() const { return m_size; }
 
-float Font::print(Renderer &renderer, const PrintDesc &desc) const {
+float Font::print(Renderer &renderer, const FontPrintDesc &desc) const {
     const char *text = desc.text;
 
     float x = desc.x;

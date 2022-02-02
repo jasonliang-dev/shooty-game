@@ -5,29 +5,32 @@
 #include "renderer.h"
 #include "tileset.h"
 
+struct TilemapPointMoveResult {
+    float x;
+    float y;
+    bool collided;
+};
+
+struct TilemapObject {
+    char type[64];
+    float x;
+    float y;
+};
+
 struct Tilemap {
     const char *try_create(const char *filename, const Tileset &tileset);
     void destroy();
 
     bool point_collision(float x, float y) const;
+    TilemapPointMoveResult point_move(vec2 point, vec2 delta,
+                                      int sub_steps) const;
 
-    struct PointMoveResult {
-        float x;
-        float y;
-        bool collided;
-    };
-    PointMoveResult point_move(vec2 point, vec2 delta, int sub_steps) const;
-
-    struct MapObject {
-        char type[64];
-        float x;
-        float y;
-    };
-    MapObject object_by_type(const char *type) const;
-    int objects(MapObject *&out) const;
+    TilemapObject object_by_type(const char *type) const;
+    int objects(TilemapObject *&out) const;
 
     bool a_star(PODVector<vec2> &out, int start_x, int start_y, int end_x,
                 int end_y);
+
     void draw(const Renderer &renderer, RenMatrix mvp, sg_image image) const;
 
   private:
@@ -35,7 +38,7 @@ struct Tilemap {
 
     TileCollisionType *m_collision_map = nullptr;
 
-    MapObject *m_objects = nullptr;
+    TilemapObject *m_objects = nullptr;
     int m_object_count = 0;
 
     struct GraphNode {
@@ -54,6 +57,7 @@ struct Tilemap {
     };
 
     GraphNode *m_graph = nullptr;
+    int *m_alive_indices = nullptr;
     PriorityQueue<int> m_frontier;
     PODVector<GraphNode> m_keep_alive;
 

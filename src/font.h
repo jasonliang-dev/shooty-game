@@ -15,21 +15,21 @@ enum FontAlign : u8 {
     FONT_ALIGN_MIDDLE = 1 << 5,
 };
 
+struct FontPrintDesc {
+    const char *text;
+    float x;
+    float y;
+    u8 color[4];
+    u8 alignment;
+};
+
 struct Font {
     const char *try_create(const char *filename, float size);
     void destroy();
 
     float width(const char *text) const;
     float height() const;
-
-    struct PrintDesc {
-        const char *text;
-        float x;
-        float y;
-        u8 color[4];
-        u8 alignment;
-    };
-    float print(Renderer &renderer, const PrintDesc &desc) const;
+    float print(Renderer &renderer, const FontPrintDesc &desc) const;
 
   private:
     static constexpr int MAX_CHARS = 256;

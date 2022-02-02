@@ -65,7 +65,7 @@ static int aux_make_font(lua_State *L) {
         float y = (float)luaL_checknumber(L, 4);
 
         // can't brace initialize?
-        Font::PrintDesc desc{};
+        FontPrintDesc desc{};
         desc.text = text;
         desc.x = x;
         desc.y = y;
@@ -175,7 +175,7 @@ static int aux_make_tilemap(lua_State *L) {
         float dy = (float)luaL_checknumber(L, 5);
         int sub_steps = (int)luaL_checkinteger(L, 6);
 
-        Tilemap::PointMoveResult res =
+        TilemapPointMoveResult res =
             map->point_move(vec2(x, y), vec2(dx, dy), sub_steps);
         lua_pushnumber(L, res.x);
         lua_pushnumber(L, res.y);
@@ -187,7 +187,7 @@ static int aux_make_tilemap(lua_State *L) {
     lua_pushcfunction(L, [](lua_State *L) -> int {
         Tilemap *map = (Tilemap *)luax_field_touserdata(L, 1, "udata");
         const char *type = luaL_checkstring(L, 2);
-        Tilemap::MapObject obj = map->object_by_type(type);
+        TilemapObject obj = map->object_by_type(type);
 
         if (!obj.type[0]) {
             return 0;
@@ -212,7 +212,7 @@ static int aux_make_tilemap(lua_State *L) {
         Tilemap *map = (Tilemap *)luax_field_touserdata(L, 1, "udata");
         const char *type = luaL_checkstring(L, 2);
 
-        Tilemap::MapObject *objs = nullptr;
+        TilemapObject *objs = nullptr;
         int object_count = map->objects(objs);
 
         lua_newtable(L);
@@ -242,7 +242,7 @@ static int aux_make_tilemap(lua_State *L) {
 
     lua_pushcfunction(L, [](lua_State *L) -> int {
         Tilemap *map = (Tilemap *)luax_field_touserdata(L, 1, "udata");
-        Tilemap::MapObject *objs = nullptr;
+        TilemapObject *objs = nullptr;
         int object_count = map->objects(objs);
 
         lua_createtable(L, object_count, 0);

@@ -11,7 +11,6 @@
 #include "deps/lua/onelua.c"
 
 #define SOKOL_IMPL
-#define SOKOL_GLCORE33
 #define SOKOL_WIN32_FORCE_MAIN
 #include "deps/sokol_app.h"
 #include "deps/sokol_gfx.h"
@@ -26,6 +25,9 @@
 
 #define STB_TRUETYPE_IMPLEMENTATION
 #include "deps/stb_truetype.h"
+
+#define SOKOL_SHDC_IMPL
+#include "shd_default.h"
 
 sapp_desc sokol_main(int argc, char **argv) {
     (void)argc;

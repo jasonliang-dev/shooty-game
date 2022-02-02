@@ -27,7 +27,6 @@ template <typename T> struct PriorityQueue {
         m_capacity = capacity;
     }
 
-    // O(log n)
     void push_min(T item, float cost) {
         if (m_size == m_capacity) {
             reserve(m_size * 2 + 1);
@@ -44,7 +43,6 @@ template <typename T> struct PriorityQueue {
         }
     }
 
-    // O(log n)
     T pop_min() {
         assert(m_size != 0);
         T top = m_data[0];

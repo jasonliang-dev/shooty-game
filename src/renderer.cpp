@@ -1,4 +1,5 @@
 #include "renderer.h"
+#include "shd_default.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -31,58 +32,19 @@ void Renderer::create(int vertex_capacity) {
 
     delete[] indices;
 
-    sg_shader_desc sdesc{};
-
-    sdesc.vs.uniform_blocks[0].size = sizeof(RenMatrix);
-    sdesc.vs.uniform_blocks[0].uniforms[0].name = "u_mvp";
-    sdesc.vs.uniform_blocks[0].uniforms[0].type = SG_UNIFORMTYPE_MAT4;
-    sdesc.fs.images[0].name = "u_texture";
-    sdesc.fs.images[0].image_type = SG_IMAGETYPE_2D;
-    sdesc.fs.images[0].sampler_type = SG_SAMPLERTYPE_FLOAT;
-
-    sdesc.vs.source = "#version 330 core\n"
-
-                      "layout(location=0) in vec3 a_position;\n"
-                      "layout(location=1) in vec2 a_texindex;\n"
-                      "layout(location=2) in vec4 a_color;\n"
-                      "layout(location=3) in vec4 a_fog;\n"
-                      "out vec2 v_texindex;\n"
-                      "out vec4 v_color;\n"
-                      "out vec4 v_fog;\n"
-                      "uniform mat4 u_mvp;\n"
-
-                      "void main() {\n"
-                      "    v_texindex = a_texindex;\n"
-                      "    v_color = a_color;\n"
-                      "    v_fog = a_fog;\n"
-                      "    gl_Position = u_mvp * vec4(a_position, 1);\n"
-                      "}\n";
-
-    sdesc.fs.source =
-        "#version 330 core\n"
-
-        "in vec2 v_texindex;\n"
-        "in vec4 v_color;\n"
-        "in vec4 v_fog;\n"
-        "out vec4 f_color;\n"
-        "uniform sampler2D u_texture;\n"
-
-        "void main() {\n"
-        "    vec4 result = texture(u_texture, v_texindex) * v_color;\n"
-        "    if (result.a < 0.1) discard;\n"
-        "    f_color = result + v_fog;\n"
-        "}\n";
+    sg_shader shd_default =
+        sg_make_shader(shd_default_shader_desc(sg_query_backend()));
 
     sg_pipeline_desc pdesc{};
-    pdesc.shader = sg_make_shader(sdesc);
-    pdesc.layout.attrs[0].format = SG_VERTEXFORMAT_FLOAT3;
-    pdesc.layout.attrs[0].buffer_index = 0;
-    pdesc.layout.attrs[1].format = SG_VERTEXFORMAT_FLOAT2;
-    pdesc.layout.attrs[1].buffer_index = 0;
-    pdesc.layout.attrs[2].format = SG_VERTEXFORMAT_UBYTE4N;
-    pdesc.layout.attrs[2].buffer_index = 0;
-    pdesc.layout.attrs[3].format = SG_VERTEXFORMAT_UBYTE4N;
-    pdesc.layout.attrs[3].buffer_index = 0;
+    pdesc.shader = shd_default;
+    pdesc.layout.attrs[ATTR_vert_a_position].format = SG_VERTEXFORMAT_FLOAT3;
+    pdesc.layout.attrs[ATTR_vert_a_position].buffer_index = 0;
+    pdesc.layout.attrs[ATTR_vert_a_texindex].format = SG_VERTEXFORMAT_FLOAT2;
+    pdesc.layout.attrs[ATTR_vert_a_texindex].buffer_index = 0;
+    pdesc.layout.attrs[ATTR_vert_a_color].format = SG_VERTEXFORMAT_UBYTE4N;
+    pdesc.layout.attrs[ATTR_vert_a_color].buffer_index = 0;
+    pdesc.layout.attrs[ATTR_vert_a_fog].format = SG_VERTEXFORMAT_UBYTE4N;
+    pdesc.layout.attrs[ATTR_vert_a_fog].buffer_index = 0;
     pdesc.index_type = SG_INDEXTYPE_UINT16;
     pdesc.depth.compare = SG_COMPAREFUNC_LESS_EQUAL;
     pdesc.depth.write_enabled = true;
@@ -110,6 +72,8 @@ void Renderer::flush() {
     if (m_vertex_count == 0) {
         return;
     }
+    // printf("vertex_count: %d\n", m_vertex_count);
+    // printf("vertex_capacity: %d\n", m_vertex_capacity);
 
     int off = sg_append_buffer(
         m_vbo, {.ptr = m_vertices, .size = sizeof(RenVertex) * m_vertex_count});
@@ -121,7 +85,8 @@ void Renderer::flush() {
         .index_buffer = m_ibo,
         .fs_images = {u_texture},
     });
-    sg_apply_uniforms(SG_SHADERSTAGE_VS, 0, SG_RANGE(u_mvp));
+    vs_params_t uniforms = {.u_mvp = u_mvp};
+    sg_apply_uniforms(SG_SHADERSTAGE_VS, SLOT_vs_params, SG_RANGE(uniforms));
     sg_draw(0, m_vertex_count * 6 / 4, 1);
 
     m_vertex_count = 0;

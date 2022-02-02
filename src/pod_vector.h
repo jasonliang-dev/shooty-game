@@ -8,7 +8,6 @@ template <typename T> struct PODVector {
     void reserve(int capacity) {
         if (capacity > m_capacity) {
             T *buffer = (T *)operator new(sizeof(T) * capacity);
-            memset(buffer, 0, sizeof(T) * capacity);
             memcpy(buffer, m_buffer, sizeof(T) * m_size);
             operator delete(m_buffer);
             m_buffer = buffer;
@@ -21,7 +20,6 @@ template <typename T> struct PODVector {
         m_size = size;
     }
 
-    // O(1) amortized
     void push_back(const T t) {
         if (m_size == m_capacity) {
             reserve(m_capacity * 2 + 1);
