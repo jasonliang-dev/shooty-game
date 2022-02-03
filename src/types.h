@@ -12,14 +12,12 @@ using u32 = uint32_t;
 using u64 = uint64_t;
 
 struct vec2 {
-    // wtf gcc
     vec2(float x, float y) {
         this->x = x;
         this->y = y;
     }
 
-    float x;
-    float y;
+    float x, y;
 };
 
 struct Rect {

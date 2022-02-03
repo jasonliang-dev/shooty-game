@@ -1,6 +1,5 @@
 #include "renderer.h"
 #include "shd_default.h"
-#include <stdio.h>
 #include <string.h>
 
 void Renderer::create(int vertex_capacity) {
@@ -72,8 +71,6 @@ void Renderer::flush() {
     if (m_vertex_count == 0) {
         return;
     }
-    // printf("vertex_count: %d\n", m_vertex_count);
-    // printf("vertex_capacity: %d\n", m_vertex_capacity);
 
     int off = sg_append_buffer(
         m_vbo, {.ptr = m_vertices, .size = sizeof(RenVertex) * m_vertex_count});

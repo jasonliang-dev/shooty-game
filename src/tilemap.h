@@ -47,19 +47,16 @@ struct Tilemap {
         float tile_cost;
         float f_cost;
         float g_cost;
-        bool visited;
         bool invalid;
 
         // index to m_keep_alive
-        // can't do `GraphNode *parent` since
-        // m_keep_alive.push_back() can invalidate the pointer
         int parent;
     };
 
     GraphNode *m_graph = nullptr;
     int *m_alive_indices = nullptr;
+    GraphNode *m_keep_alive = nullptr;
     PriorityQueue<int> m_frontier;
-    PODVector<GraphNode> m_keep_alive;
 
     int m_width = 0;
     int m_height = 0;

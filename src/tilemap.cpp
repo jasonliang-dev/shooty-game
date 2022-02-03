@@ -39,6 +39,7 @@ const char *Tilemap::try_create(const char *filename, const Tileset &tileset) {
 
             m_graph = new GraphNode[tiled->width * tiled->height]{};
             m_alive_indices = new int[tiled->width * tiled->height]{};
+            m_keep_alive = new GraphNode[tiled->width * tiled->height]{};
 
             RenVertex *vertices = new RenVertex[m_tile_count * 4]{};
 
@@ -154,8 +155,9 @@ void Tilemap::destroy() {
 
     delete[] m_graph;
     delete[] m_alive_indices;
+    delete[] m_keep_alive;
     m_frontier.destroy();
-    m_keep_alive.destroy();
+    // m_keep_alive.destroy();
 }
 
 bool Tilemap::point_collision(float x, float y) const {
@@ -167,32 +169,32 @@ bool Tilemap::point_collision(float x, float y) const {
     TileCollisionType collision = m_collision_map[iy * m_width + ix];
 
     constexpr float pad = 0.75f;
-    constexpr float nad = 1 - pad;
+    constexpr float dap = 1 - pad;
     switch (collision) {
     case TILE_COLLISION_FULL:
         return true;
     case TILE_COLLISION_OUT_TOP_LEFT:
-        return fx <= nad || fy <= nad;
+        return fx <= dap || fy <= dap;
     case TILE_COLLISION_OUT_TOP:
-        return fy <= nad;
+        return fy <= dap;
     case TILE_COLLISION_OUT_TOP_RIGHT:
-        return fx > pad || fy <= nad;
+        return fx > pad || fy <= dap;
     case TILE_COLLISION_OUT_LEFT:
-        return fx <= nad;
+        return fx <= dap;
     case TILE_COLLISION_OUT_RIGHT:
         return fx > pad;
     case TILE_COLLISION_OUT_BOTTOM_LEFT:
-        return fx <= nad || fy > pad;
+        return fx <= dap || fy > pad;
     case TILE_COLLISION_OUT_BOTTOM:
         return fy > pad;
     case TILE_COLLISION_OUT_BOTTOM_RIGHT:
         return fx > pad || fy > pad;
     case TILE_COLLISION_IN_TOP_LEFT:
-        return fx <= nad && fy <= nad;
+        return fx <= dap && fy <= dap;
     case TILE_COLLISION_IN_TOP_RIGHT:
-        return fx > pad && fy <= nad;
+        return fx > pad && fy <= dap;
     case TILE_COLLISION_IN_BOTTOM_LEFT:
-        return fx <= nad && fy > pad;
+        return fx <= dap && fy > pad;
     case TILE_COLLISION_IN_BOTTOM_RIGHT:
         return fx > pad && fy > pad;
     default:
@@ -255,38 +257,11 @@ bool Tilemap::a_star(PODVector<vec2> &out, int start_x, int start_y, int end_x,
         return sqrtf(dx * dx + dy * dy);
     };
 
-    const auto fill_neighbors = [this](GraphNode **neighbors, int x,
-                                       int y) -> int {
-        int neighbor_count = 0;
-        for (int r = y - 1; r <= y + 1; r++) {
-            for (int c = x - 1; c <= x + 1; c++) {
-                if (c == x && r == y) {
-                    continue;
-                }
-
-                if (c < 0 || c >= m_width || r < 0 || r >= m_height) {
-                    continue;
-                }
-
-                GraphNode *node = &m_graph[r * m_width + c];
-                if (node->tile_cost < 0) {
-                    continue;
-                }
-
-                neighbors[neighbor_count++] = node;
-            }
-        }
-
-        return neighbor_count;
-    };
-
-    m_keep_alive.clear();
     m_frontier.clear();
 
     for (int i = 0; i < m_width * m_height; i++) {
         m_graph[i].f_cost = 0;
         m_graph[i].g_cost = FLT_MAX;
-        m_graph[i].visited = false;
         m_graph[i].parent = -1;
 
         m_alive_indices[i] = -1;
@@ -307,12 +282,14 @@ bool Tilemap::a_star(PODVector<vec2> &out, int start_x, int start_y, int end_x,
         return false;
     }
 
+    int alive_count = 0;
+
     begin->g_cost = 0;
     begin->f_cost = distance(start_x, start_y, end_x, end_y);
-    begin->visited = true;
-    m_keep_alive.push_back(*begin);
-    m_frontier.push_min(m_keep_alive.size() - 1, begin->f_cost);
-    m_alive_indices[start_y * m_width + start_x] = m_keep_alive.size() - 1;
+    m_keep_alive[alive_count] = *begin;
+    m_frontier.push_min(alive_count, begin->f_cost);
+    m_alive_indices[start_y * m_width + start_x] = alive_count;
+    alive_count++;
 
     while (m_frontier.size()) {
         int top_ptr = m_frontier.pop_min();
@@ -331,8 +308,27 @@ bool Tilemap::a_star(PODVector<vec2> &out, int start_x, int start_y, int end_x,
             return true;
         }
 
+        int neighbor_count = 0;
         GraphNode *neighbors[8];
-        int neighbor_count = fill_neighbors(neighbors, top->x, top->y);
+
+        for (int y = top->y - 1; y <= top->y + 1; y++) {
+            for (int x = top->x - 1; x <= top->x + 1; x++) {
+                if (x == top->x && y == top->y) {
+                    continue;
+                }
+
+                if (x < 0 || x >= m_width || y < 0 || y >= m_height) {
+                    continue;
+                }
+
+                GraphNode *node = &m_graph[y * m_width + x];
+                if (node->tile_cost < 0) {
+                    continue;
+                }
+
+                neighbors[neighbor_count++] = node;
+            }
+        }
 
         for (int i = 0; i < neighbor_count; i++) {
             GraphNode *neighbor = neighbors[i];
@@ -347,17 +343,17 @@ bool Tilemap::a_star(PODVector<vec2> &out, int start_x, int start_y, int end_x,
                     neighbor->g_cost +
                     distance(neighbor->x, neighbor->y, end_x, end_y);
                 neighbor->parent = top_ptr;
-                neighbor->visited = true;
 
                 int live = m_alive_indices[neighbor->y * m_width + neighbor->x];
                 if (live != -1) {
                     m_keep_alive[live].invalid = true;
                 }
 
-                m_keep_alive.push_back(*neighbor);
-                m_frontier.push_min(m_keep_alive.size() - 1, neighbor->f_cost);
+                m_keep_alive[alive_count] = *neighbor;
+                m_frontier.push_min(alive_count, neighbor->f_cost);
                 m_alive_indices[neighbor->y * m_width + neighbor->x] =
-                    m_keep_alive.size() - 1;
+                    alive_count;
+                alive_count++;
             }
         }
     }

@@ -11,7 +11,6 @@ local vec3 = vec.vec3
 function core.init()
     atl_tiles = assert(Atlas "data/content/tiles.rtpa")
     atl_entities = assert(Atlas "data/content/entities.rtpa")
-    -- map_test1 = assert(gfx.make_tilemap "data/content/map.json")
     fnt_normal = assert(aux.make_font("data/content/times.ttf", 32))
     fnt_small = assert(aux.make_font("data/content/times.ttf", 20))
 

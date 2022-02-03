@@ -1,7 +1,6 @@
 #pragma once
 
 #include "api.h"
-#include "deps/sokol_gfx.h"
 #include "deps/sokol_app.h"
 #include "renderer.h"
 

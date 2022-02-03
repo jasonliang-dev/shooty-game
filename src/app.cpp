@@ -1,5 +1,4 @@
 #include "app.h"
-#include "api.h"
 #include "deps/sokol_glue.h"
 #include "deps/sokol_time.h"
 #include <stdlib.h>
