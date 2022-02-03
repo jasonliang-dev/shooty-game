@@ -23,7 +23,7 @@ function Player:new(desc)
     self.dash_time = 0
     self.dash_time_init = 0.24
     self.facing_right = false
-    self.shoot_spring = Spring(400, 28, 0)
+    self.shoot_spring = Spring()
 
     self.sprite = Sprite {
         atlas = atl_entities,

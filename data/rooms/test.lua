@@ -9,6 +9,7 @@ local Player = require "entities.player"
 local Plant = require "entities.plant"
 local BasicEnemy = require "entities.basic_enemy"
 local FollowEnemy = require "entities.follow_enemy"
+local FlyingEnemy = require "entities.flying_enemy"
 local EntityGroup = require "entity_group"
 local Camera = require "camera"
 
@@ -34,6 +35,12 @@ function RoomTest:new()
         x = spawn.x,
         z = spawn.y,
         map = tmx_lv1,
+    })
+
+    self.group:add(FlyingEnemy, {
+        x = 10,
+        z = 10,
+        attack_time = 1.2
     })
 
     self.player = self.group:add(Player, {

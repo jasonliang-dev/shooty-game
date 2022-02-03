@@ -157,7 +157,6 @@ void Tilemap::destroy() {
     delete[] m_alive_indices;
     delete[] m_keep_alive;
     m_frontier.destroy();
-    // m_keep_alive.destroy();
 }
 
 bool Tilemap::point_collision(float x, float y) const {
