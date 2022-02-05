@@ -10,6 +10,9 @@
 #define MAKE_LIB
 #include "deps/lua/onelua.c"
 
+#define MINIAUDIO_IMPLEMENTATION
+#include "deps/miniaudio.h"
+
 #define SOKOL_IMPL
 #define SOKOL_WIN32_FORCE_MAIN
 #include "deps/sokol_app.h"

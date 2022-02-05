@@ -82,6 +82,8 @@ function FlyingEnemy:fsm_enter_attack()
     self.target_x = self.x + (player.x - self.x) * 2
     self.target_z = self.z + (player.z - self.z) * 2
     self.p_attack.time = 0
+
+    snd.play "data/content/woosh.wav"
 end
 
 function FlyingEnemy:fsm_attack(dt)
@@ -96,6 +98,10 @@ function FlyingEnemy:fsm_attack(dt)
     else
         self.fsm:transition "fly"
     end
+end
+
+function FlyingEnemy:on_death()
+    common.on_death(self)
 end
 
 function FlyingEnemy:draw()

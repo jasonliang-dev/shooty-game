@@ -34,10 +34,10 @@ function SpinSpikeEnemy:update(dt)
     self.x = self.origin_x + math.cos(self.orbit) * self.radius
     self.z = self.origin_z + math.sin(self.orbit) * self.radius
 
-    local bullets = self.group:nearby_classname("Bullet", self.x, self.y, self.z, 1)
+    local bullets = self.group:nearby_classname("Bullet", self.x, self.y, self.z, 0.8)
     for _, bullet in pairs(bullets) do
-        self.p_hit.time = 0
-        self.hit_spring:pull(0.1)
+        -- self.p_hit.time = 0
+        -- self.hit_spring:pull(0.1)
         bullet.dead = true
     end
 end

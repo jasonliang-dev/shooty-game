@@ -17,9 +17,9 @@ function FishEnemy:new(desc)
 
     self.sprite = Sprite {
         atlas = atl_entities,
-        initial = "default",
+        initial = "bite",
         animations = {
-            default = {ms_per_frame = 150, frames = {"fish_1", "fish_2"}},
+            bite = {ms_per_frame = 150, frames = {"fish_1", "fish_2"}},
         }
     }
 end
@@ -42,6 +42,10 @@ function FishEnemy:update(dt)
     end
     self.dy = dy
 
+end
+
+function FishEnemy:on_death()
+    common.on_death(self)
 end
 
 function FishEnemy:draw()

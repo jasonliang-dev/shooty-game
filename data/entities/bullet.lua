@@ -20,6 +20,8 @@ function Explode:new(desc)
             default = {ms_per_frame = 50, frames = {"explode_1", "explode_2", "explode_3", "explode_4"}}
         }
     }
+   
+    snd.play "data/content/boom.wav"
 end
 
 function Explode:update(dt)
@@ -60,6 +62,8 @@ function Bullet:new(desc)
     self.dz = desc.dz
     self.lifetime = 5
     self.rot = desc.rot - math.pi / 2
+
+    snd.play "data/content/beep.wav"
 end
 
 function Bullet:update(dt)
@@ -74,6 +78,10 @@ function Bullet:update(dt)
 end
 
 function Bullet:on_death()
+    if self.lifetime <= 0 then
+        return
+    end
+
     self.group:add(Explode, {
         x = self.x,
         y = self.y,

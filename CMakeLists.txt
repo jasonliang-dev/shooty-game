@@ -10,6 +10,7 @@ add_executable(${PROJECT_NAME}
     src/api_gfx.cpp
     src/api_sys.cpp
     src/api_aux.cpp
+    src/api_snd.cpp
     src/app.cpp
     src/font.cpp
     src/renderer.cpp

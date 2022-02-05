@@ -8,13 +8,19 @@ AppState *app;
 void app_init(void) {
     sg_setup({.context = sapp_sgcontext()});
     stm_setup();
+
     app = new AppState{};
+
+    if (ma_engine_init(NULL, &app->ma) != MA_SUCCESS) {
+        abort();
+    }
 
     lua_State *L = app->lua = luaL_newstate();
     luaL_openlibs(L);
     luaL_requiref(L, "sys", sys_lib, true);
     luaL_requiref(L, "gfx", gfx_lib, true);
     luaL_requiref(L, "aux", aux_lib, true);
+    luaL_requiref(L, "snd", snd_lib, true);
     lua_pop(L, 3);
 
     lua_newtable(L);
@@ -151,6 +157,7 @@ void app_frame(void) {
 void app_cleanup(void) {
     lua_close(app->lua);
     app->renderer.destroy();
+    ma_engine_uninit(&app->ma);
     delete app;
     sg_shutdown();
 }

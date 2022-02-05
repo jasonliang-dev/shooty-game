@@ -31,6 +31,10 @@ function enemy_common.update(entity, desc)
     end
 end
 
+function enemy_common.on_death(entity)
+    snd.play "data/content/death.wav"
+end
+
 function enemy_common.draw(entity)
     local x1 = entity.x - 0.5
     local y1 = entity.y + 1.2

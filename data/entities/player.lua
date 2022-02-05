@@ -129,6 +129,7 @@ end
 
 function Player:fsm_enter_dash()
     self.sprite:play "dash"
+    snd.play "data/content/swish.wav"
 end
 
 function Player:fsm_dash(dt)

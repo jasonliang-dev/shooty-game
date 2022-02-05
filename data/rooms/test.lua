@@ -44,7 +44,7 @@ function RoomTest:new()
         x = 10,
         z = 10,
         attack_time = 1.2,
-        health = 2,
+        health = 3,
     })
 
     self.group:add(SpinSpikeEnemy, {
@@ -96,8 +96,8 @@ function RoomTest:update(dt)
 
     self.camera.target = {
         x = self.player.x,
-        y = 8,
-        z = self.player.z + 13
+        y = 6,
+        z = self.player.z + 10
     }
     self.camera:update(dt)
 end

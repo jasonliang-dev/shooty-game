@@ -42,6 +42,10 @@ function BasicEnemy:update(dt)
     end
 end
 
+function BasicEnemy:on_death()
+    common.on_death(self)
+end
+
 function BasicEnemy:draw()
     common.draw(self)
 end

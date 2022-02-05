@@ -45,6 +45,10 @@ function FollowEnemy:update(dt)
     end
 end
 
+function FollowEnemy:on_death()
+    common.on_death(self)
+end
+
 function FollowEnemy:draw()
     common.draw(self)
 end

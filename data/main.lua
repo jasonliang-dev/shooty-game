@@ -9,6 +9,10 @@ local Atlas = require "atlas"
 local vec3 = vec.vec3
 
 function core.init()
+    SYS_PLATFORM = sys.platform()
+
+    math.randomseed(0, 0)
+
     atl_tiles = assert(Atlas "data/content/tiles.rtpa")
     atl_entities = assert(Atlas "data/content/entities.rtpa")
     fnt_normal = assert(aux.make_font("data/content/times.ttf", 32))
@@ -35,7 +39,7 @@ function core.event(type, ...)
 end
 
 function core.frame(dt)
-    if keyboard.down "escape" then
+    if SYS_PLATFORM ~= "html5" and keyboard.down "escape" then
         sys.quit()
     end
 
