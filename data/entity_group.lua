@@ -41,6 +41,27 @@ function EntityGroup:get_by_classname(classname)
     return self.group_by_classname[classname]
 end
 
+function EntityGroup:nearby_classname(classname, x, y, z, distance)
+    local entities = {}
+
+    local by_classname = self.group_by_classname[classname]
+    if not by_classname then
+        return entities
+    end
+
+    for k, entity in pairs(by_classname) do
+        local dx = entity.x - x
+        local dy = entity.y - y
+        local dz = entity.z - z
+        local dist = math.sqrt(dx * dx + dy * dy + dz * dz)
+        if dist <= distance then
+            entities[k] = entity
+        end
+    end
+
+    return entities
+end
+
 function EntityGroup:update(dt)
     for _, entity in pairs(self.group_by_id) do
         entity:update(dt)
@@ -55,12 +76,8 @@ function EntityGroup:update(dt)
             entity:on_death()
         end
 
-        for _, group in pairs(self.group_by_classname) do
-            for id2 in pairs(group) do
-                if id2 == id then
-                    group[id2] = nil
-                end
-            end
+        if entity.classname then
+            self.group_by_classname[entity.classname][id] = nil
         end
 
         self.group_by_id[id] = nil

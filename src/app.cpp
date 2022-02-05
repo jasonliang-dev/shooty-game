@@ -87,9 +87,6 @@ void app_event(const sapp_event *e) {
         lua_pushstring(L, "keydown");
         lua_pushinteger(L, e->key_code);
         lua_pcall(L, 2, 0, 1);
-        if (e->key_code == SAPP_KEYCODE_ESCAPE) {
-            sapp_request_quit();
-        }
         break;
     }
     case SAPP_EVENTTYPE_KEY_UP: {

@@ -3,13 +3,14 @@ local quat = require "quat"
 local keyboard = require "keyboard"
 local mouse = require "mouse"
 local class = require "class"
-local vec3 = require "vec".vec3
 local ray = require "ray"
 local Player = require "entities.player"
 local Plant = require "entities.plant"
 local BasicEnemy = require "entities.basic_enemy"
 local FollowEnemy = require "entities.follow_enemy"
 local FlyingEnemy = require "entities.flying_enemy"
+local SpinSpikeEnemy = require "entities.spin_spike_enemy"
+local FishEnemy = require "entities.fish_enemy"
 local EntityGroup = require "entity_group"
 local Camera = require "camera"
 
@@ -24,30 +25,69 @@ function RoomTest:new()
     -- map_test:populate_entity_group(self.group)
 
     self.group:add(BasicEnemy, {
-        x = spawn.x,
-        z = spawn.y,
+        map = tmx_lv1,
+        x = 20,
+        z = 20,
         dx = -1,
         dz = 0,
-        map = tmx_lv1,
+        health = 3,
     })
 
     self.group:add(FollowEnemy, {
-        x = spawn.x,
-        z = spawn.y,
         map = tmx_lv1,
+        x = 20,
+        z = 20,
+        health = 3,
     })
 
     self.group:add(FlyingEnemy, {
         x = 10,
         z = 10,
-        attack_time = 1.2
+        attack_time = 1.2,
+        health = 2,
+    })
+
+    self.group:add(SpinSpikeEnemy, {
+        origin_x = 14,
+        origin_z = 25,
+        radius = 3,
+    })
+
+    self.group:add(SpinSpikeEnemy, {
+        origin_x = 11,
+        origin_z = 32,
+        radius = 3,
+    })
+
+    self.group:add(SpinSpikeEnemy, {
+        origin_x = 32,
+        origin_z = 32,
+        radius = 2,
+    })
+
+    self.group:add(FishEnemy, {
+        x = 10,
+        z = 19,
+        health = 3,
+    })
+
+    self.group:add(FishEnemy, {
+        x = 26,
+        z = 23,
+        health = 3,
+    })
+
+    self.group:add(FishEnemy, {
+        x = 8,
+        z = 25,
+        health = 3,
     })
 
     self.player = self.group:add(Player, {
+        map = tmx_lv1,
+        camera = self.camera,
         x = spawn.x,
         z = spawn.y,
-        camera = self.camera,
-        map = tmx_lv1,
     })
 end
 

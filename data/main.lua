@@ -35,10 +35,15 @@ function core.event(type, ...)
 end
 
 function core.frame(dt)
+    if keyboard.down "escape" then
+        sys.quit()
+    end
+
     rooms.current:update(dt)
 
     local draws_last_frame = gfx.draw_count()
     gfx.begin_draw()
+
     rooms.current:draw()
 
     gfx.bind_mvp(mat.ortho(0, sys.window_width(), sys.window_height(), 0, -1, 1))

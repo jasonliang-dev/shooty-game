@@ -84,6 +84,27 @@ static int gfx_v3_t2_c4(lua_State *L) {
     return 0;
 }
 
+static int gfx_v3_t2_f4(lua_State *L) {
+    float x = (float)luaL_checknumber(L, 1);
+    float y = (float)luaL_checknumber(L, 2);
+    float z = (float)luaL_checknumber(L, 3);
+    float u = (float)luaL_optnumber(L, 4, 0);
+    float v = (float)luaL_optnumber(L, 5, 0);
+    u8 fr = (u8)luaL_optinteger(L, 6, 0);
+    u8 fg = (u8)luaL_optinteger(L, 7, 0);
+    u8 fb = (u8)luaL_optinteger(L, 8, 0);
+    u8 fa = (u8)luaL_optinteger(L, 9, 0);
+
+    app->renderer.push({
+        .pos = {x, y, z},
+        .uv = {u, v},
+        .color = {255, 255, 255, 255},
+        .fog = {fr, fg, fb, fa},
+    });
+
+    return 0;
+}
+
 static int gfx_v3_t2_c4_f4(lua_State *L) {
     float x = (float)luaL_checknumber(L, 1);
     float y = (float)luaL_checknumber(L, 2);
@@ -119,6 +140,7 @@ int gfx_lib(lua_State *L) {
         {"bind_texture", gfx_bind_texture},
         {"v3_t2", gfx_v3_t2},
         {"v3_t2_c4", gfx_v3_t2_c4},
+        {"v3_t2_f4", gfx_v3_t2_f4},
         {"v3_t2_c4_f4", gfx_v3_t2_c4_f4},
         {nullptr, nullptr},
     };

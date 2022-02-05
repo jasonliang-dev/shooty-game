@@ -29,7 +29,10 @@ end
 
 function Sprite:update(dt)
     local animation = self.animations[self.current_animation]
-    self.elapsed = math.fmod(self.elapsed + dt * 1000, animation.ms_per_frame * #animation.frames)
+
+    local elapsed = self.elapsed
+    self.elapsed = math.fmod(elapsed + dt * 1000, animation.ms_per_frame * #animation.frames)
+    return elapsed > self.elapsed
 end
 
 function Sprite:uv()

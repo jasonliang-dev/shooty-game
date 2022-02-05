@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.5" tiledversion="1.7.2" orientation="orthogonal" renderorder="right-down" width="50" height="50" tilewidth="16" tileheight="16" infinite="0" nextlayerid="3" nextobjectid="19">
+<map version="1.5" tiledversion="1.7.2" orientation="orthogonal" renderorder="right-down" width="50" height="50" tilewidth="16" tileheight="16" infinite="0" nextlayerid="4" nextobjectid="20">
  <editorsettings>
   <export target="lv1.json" format="json"/>
  </editorsettings>
@@ -59,53 +59,9 @@
 </data>
  </layer>
  <objectgroup id="2" name="Object Layer 1">
-  <object id="3" name="spawn" type="spawn" x="324" y="308.667">
-   <point/>
-  </object>
-  <object id="4" name="enemy" type="enemy" x="205.333" y="401.333">
-   <point/>
-  </object>
-  <object id="5" name="enemy" type="enemy" x="355.333" y="454.667">
-   <point/>
-  </object>
-  <object id="6" name="enemy" type="enemy" x="365.333" y="382.667">
-   <point/>
-  </object>
-  <object id="7" name="enemy" type="enemy" x="493.333" y="368">
-   <point/>
-  </object>
-  <object id="8" name="enemy" type="enemy" x="434" y="248">
-   <point/>
-  </object>
-  <object id="9" name="enemy" type="enemy" x="181.333" y="488.667">
-   <point/>
-  </object>
-  <object id="10" name="enemy" type="enemy" x="348.667" y="500.667">
-   <point/>
-  </object>
-  <object id="11" name="enemy" type="enemy" x="500" y="499.333">
-   <point/>
-  </object>
-  <object id="12" name="enemy" type="enemy" x="482" y="419.333">
-   <point/>
-  </object>
-  <object id="13" name="enemy" type="enemy" x="612" y="434.667">
-   <point/>
-  </object>
-  <object id="14" name="enemy" type="enemy" x="604.667" y="386">
-   <point/>
-  </object>
-  <object id="15" name="enemy" type="enemy" x="581.333" y="563.333">
-   <point/>
-  </object>
-  <object id="16" name="enemy" type="enemy" x="446" y="616.667">
-   <point/>
-  </object>
-  <object id="17" name="enemy" type="enemy" x="358" y="542">
-   <point/>
-  </object>
-  <object id="18" name="enemy" type="enemy" x="239.333" y="578.667">
+  <object id="3" name="spawn" type="spawn" x="351" y="496.667">
    <point/>
   </object>
  </objectgroup>
+ <objectgroup id="3" name="Object Layer 2"/>
 </map>

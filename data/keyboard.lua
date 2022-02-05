@@ -138,6 +138,14 @@ function keyboard.down(key)
     return keyboard.current[translate_key[key]]
 end
 
+function keyboard.any_down(keys)
+    for _, key in ipairs(keys) do
+        if keyboard.current[translate_key[key]] then
+            return true
+        end
+    end
+end
+
 function keyboard.pressed(key)
     local keycode = translate_key[key]
     return not keyboard.prev[keycode] and keyboard.current[keycode]

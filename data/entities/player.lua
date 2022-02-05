@@ -8,6 +8,7 @@ local Sprite = require "sprite"
 local Bullet = require "entities.bullet"
 local StateMachine = require "state_machine"
 local Spring = require "spring"
+local Progress = require "progress"
 
 local Player = class()
 Player.classname = "Player"
@@ -17,11 +18,11 @@ function Player:new(desc)
     self.map = desc.map
 
     self.x = desc.x
+    self.y = 0
     self.z = desc.z
     self.dx = 0
     self.dz = 0
-    self.dash_time = 0
-    self.dash_time_init = 0.24
+    self.p_dash = Progress(0.25)
     self.facing_right = false
     self.shoot_spring = Spring()
 
@@ -72,7 +73,13 @@ function Player:update(dt)
                 local dx = raycast.point.x - self.x
                 local dz = raycast.point.z - self.z
                 dx, dz = vec2.normalize(dx, dz)
-                self.group:add(Bullet, self.x, self.z, dx, dz)
+                self.group:add(Bullet, {
+                    x = self.x,
+                    z = self.z,
+                    dx = dx,
+                    dz = dz,
+                    rot = lume.angle(self.x, self.z, raycast.point.x, raycast.point.z),
+                })
                 self.shoot_spring:pull(0.08)
             end
         end
@@ -121,34 +128,37 @@ function Player:fsm_walk(dt)
 end
 
 function Player:fsm_enter_dash()
-    self.dash_time = self.dash_time_init
+    self.sprite:play "dash"
 end
 
 function Player:fsm_dash(dt)
-    if self.dash_time > 0 then
-        self.x, self.z = self.map:point_move(self.x, self.z, self.dx * 9 * dt, self.dz * 9 * dt, 4)
-        self.dash_time = self.dash_time - dt
+    local dash_speed = 10
+    if self.p_dash:percent() < 1 then
+        self.p_dash:update(dt)
+        self.x, self.z = self.map:point_move(self.x, self.z, self.dx * dash_speed * dt, self.dz * dash_speed * dt, 4)
+    elseif keyboard.any_down {"w", "a", "s", "d"} then
+        self.fsm:transition "walk"
     else
         self.fsm:transition "idle"
     end
 end
 
 function Player:fsm_leave_dash()
-    self.dash_time = 0
+    self.p_dash.time = 0
 end
 
 function Player:draw()
-    local rad = lume.lerp(math.pi * 2, 0, self.dash_time / self.dash_time_init)
+    local rad = lume.lerp(0, math.pi * 2, self.p_dash:percent())
     if self.dx > 0 then
         rad = -rad
     end
 
     local x1, y1, z1, x2, y2, z2, x3, y3, x4, y4
     if self.dx ~= 0 then
-        x1, y1 = vec2.rotate(rad, self.x - 0.5, 1.2, self.x, 0.6)
-        x2, y2 = vec2.rotate(rad, self.x - 0.5, 0.0, self.x, 0.6)
-        x3, y3 = vec2.rotate(rad, self.x + 0.5, 0.0, self.x, 0.6)
-        x4, y4 = vec2.rotate(rad, self.x + 0.5, 1.2, self.x, 0.6)
+        x1, y1 = vec2.rotate(rad, self.x - 0.5, self.y + 1.2, self.x, self.y + 0.6)
+        x2, y2 = vec2.rotate(rad, self.x - 0.5, self.y + 0.0, self.x, self.y + 0.6)
+        x3, y3 = vec2.rotate(rad, self.x + 0.5, self.y + 0.0, self.x, self.y + 0.6)
+        x4, y4 = vec2.rotate(rad, self.x + 0.5, self.y + 1.2, self.x, self.y + 0.6)
         z1, z2 = self.z, self.z
     else
         x1, x2 = self.x - 0.5, self.x - 0.5
@@ -176,7 +186,7 @@ function Player:draw()
     local v2 = uv.v2
 
     local r, g, b, a
-    if self.dash_time > 0 then
+    if self.p_dash.time ~= 0 then
         r, g, b, a = 230, 230, 255, 255
     else
         r, g, b, a = 255, 255, 255, 255

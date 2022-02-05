@@ -33,7 +33,7 @@ uniform sampler2D u_texture;
 
 void main() {
     vec4 result = texture(u_texture, v_texindex) * v_color;
-    if (result.a < 0.1) {
+    if (result.a < 0.01) {
         discard;
     }
 

@@ -114,21 +114,19 @@ const char *Tilemap::try_create(const char *filename, const Tileset &tileset) {
 
             delete[] vertices;
         } else if (strcmp(layer->type.ptr, "objectgroup") == 0) {
-            // append more objects?
-            if (m_objects) {
-                destroy();
-                return "tilemap should only have one object group";
-            }
-
+            int old_count = m_object_count;
             for (cute_tiled_object_t *obj = layer->objects; obj;
                  obj = obj->next) {
                 m_object_count++;
             }
 
-            m_objects = new TilemapObject[m_object_count]{};
+            TilemapObject *objects = new TilemapObject[m_object_count]{};
+            memcpy(objects, m_objects, sizeof(TilemapObject) * old_count);
+            delete[] m_objects;
+            m_objects = objects;
 
             cute_tiled_object_t *obj = layer->objects;
-            for (int i = 0; i < m_object_count; i++) {
+            for (int i = old_count; i < m_object_count; i++) {
                 m_objects[i] = {
                     .x = obj->x / tileset.tile_width(),
                     .y = obj->y / tileset.tile_height(),

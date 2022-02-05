@@ -4,10 +4,10 @@ local Spring = require "spring"
 
 local Plant = class()
 
-function Plant:new(x, z, name)
-    self.x = x
-    self.z = z
-    self.uv = atl_entities:uv(name)
+function Plant:new(desc)
+    self.x = desc.x
+    self.z = desc.z
+    self.uv = atl_entities:uv(desc.name)
     self.spring = Spring()
 end
 
