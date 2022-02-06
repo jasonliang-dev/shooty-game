@@ -58,12 +58,14 @@ function Player:update(dt)
 
     local state = self.fsm.current_state
     if state == "idle" or state == "walk" then
+        local cast = 50
+        local off_y = 0.4
         local raycast = ray.vs_quad {
             ray = ray.from_screen(mouse.x, mouse.y, self.camera),
-            v1 = {x = -50, y = 0, z = -50},
-            v2 = {x = -50, y = 0, z = 50},
-            v3 = {x = 50, y = 0, z = 50},
-            v4 = {x = 50, y = 0, z = -50},
+            v1 = {x = -cast, y = off_y, z = -cast},
+            v2 = {x = -cast, y = off_y, z = cast},
+            v3 = {x = cast, y = off_y, z = cast},
+            v4 = {x = cast, y = off_y, z = -cast},
         }
 
         if raycast then

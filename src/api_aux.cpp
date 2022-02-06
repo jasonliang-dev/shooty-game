@@ -57,6 +57,23 @@ static int aux_make_font(lua_State *L) {
     lua_pushlightuserdata(L, font);
     lua_setfield(L, -2, "udata");
 
+    lua_pushnumber(L, font->size());
+    lua_setfield(L, -2, "size");
+
+    lua_pushnumber(L, font->height());
+    lua_setfield(L, -2, "height");
+
+    lua_pushnumber(L, font->baseline());
+    lua_setfield(L, -2, "baseline");
+
+    lua_pushcfunction(L, [](lua_State *L) -> int {
+        Font *font = (Font *)luax_field_touserdata(L, 1, "udata");
+        const char *text = luaL_checkstring(L, 2);
+        lua_pushnumber(L, font->width(text));
+        return 1;
+    });
+    lua_setfield(L, -2, "width");
+
     lua_pushcfunction(L, [](lua_State *L) -> int {
         Font *font = (Font *)luax_field_touserdata(L, 1, "udata");
 
@@ -64,13 +81,11 @@ static int aux_make_font(lua_State *L) {
         float x = (float)luaL_checknumber(L, 3);
         float y = (float)luaL_checknumber(L, 4);
 
-        // can't brace initialize?
         FontPrintDesc desc{};
         desc.text = text;
         desc.x = x;
         desc.y = y;
         memset(desc.color, 255, sizeof(u8) * 4);
-        desc.alignment = FONT_ALIGN_LEFT | FONT_ALIGN_BOTTOM;
 
         float n = font->print(app->renderer, desc);
 

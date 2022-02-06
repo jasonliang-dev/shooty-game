@@ -33,7 +33,7 @@ function FishEnemy:update(dt)
 
     common.update(self, {
         dt = dt,
-        collision_radius = 0.8,
+        collision_distance = 0.8,
     })
 
     local dy = self.y - y

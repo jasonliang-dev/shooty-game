@@ -11,7 +11,21 @@ void app_init(void) {
 
     app = new AppState{};
 
-    if (ma_engine_init(NULL, &app->ma) != MA_SUCCESS) {
+    app->renderer.create(12000);
+
+    u8 rgba[4] = {255, 255, 255, 255};
+    sg_image_data image_data{};
+    image_data.subimage[0][0] = SG_RANGE(rgba);
+    app->white = sg_make_image({
+        .width = 1,
+        .height = 1,
+        .pixel_format = SG_PIXELFORMAT_RGBA8,
+        .min_filter = SG_FILTER_NEAREST,
+        .mag_filter = SG_FILTER_NEAREST,
+        .data = image_data,
+    });
+
+    if (ma_engine_init(nullptr, &app->ma) != MA_SUCCESS) {
         abort();
     }
 
@@ -21,7 +35,7 @@ void app_init(void) {
     luaL_requiref(L, "gfx", gfx_lib, true);
     luaL_requiref(L, "aux", aux_lib, true);
     luaL_requiref(L, "snd", snd_lib, true);
-    lua_pop(L, 3);
+    lua_pop(L, 4);
 
     lua_newtable(L);
     lua_setglobal(L, "core");
@@ -61,20 +75,6 @@ void app_init(void) {
         lua_call(L, 1, 0);
 
         exit(-1);
-    });
-
-    app->renderer.create(12000);
-
-    u8 rgba[4] = {255, 255, 255, 255};
-    sg_image_data image_data{};
-    image_data.subimage[0][0] = SG_RANGE(rgba);
-    app->white = sg_make_image({
-        .width = 1,
-        .height = 1,
-        .pixel_format = SG_PIXELFORMAT_RGBA8,
-        .min_filter = SG_FILTER_NEAREST,
-        .mag_filter = SG_FILTER_NEAREST,
-        .data = image_data,
     });
 
     app->time_now = stm_now();
@@ -156,8 +156,9 @@ void app_frame(void) {
 
 void app_cleanup(void) {
     lua_close(app->lua);
-    app->renderer.destroy();
     ma_engine_uninit(&app->ma);
+    sg_destroy_image(app->white);
+    app->renderer.destroy();
     delete app;
     sg_shutdown();
 }

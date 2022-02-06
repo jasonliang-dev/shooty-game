@@ -1,10 +1,8 @@
-local rooms = {
-    list = {
-        test = require "rooms.test",
-    },
-}
+local rooms = {}
 
-function rooms.start(name)
+function rooms.start(name, list)
+    rooms.list = list
+
     for _, r in pairs(rooms.list) do
         r.rooms = rooms
     end

@@ -20,7 +20,7 @@ function Explode:new(desc)
             default = {ms_per_frame = 50, frames = {"explode_1", "explode_2", "explode_3", "explode_4"}}
         }
     }
-   
+
     snd.play "data/content/boom.wav"
 end
 

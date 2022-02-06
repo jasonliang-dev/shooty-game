@@ -45,7 +45,7 @@ end
 function FlyingEnemy:update(dt)
     common.update(self, {
         dt = dt,
-        collision_radius = 0.9,
+        collision_distance = 0.9,
     })
     self.sprite:update(dt)
     self.fsm:update(dt)

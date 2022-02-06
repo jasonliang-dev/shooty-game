@@ -16,7 +16,7 @@ function enemy_common.update(entity, desc)
     entity.hit_spring:update(dt)
     entity.p_hit:update(dt)
 
-    local bullets = entity.group:nearby_classname("Bullet", entity.x, entity.y + 0.5, entity.z, desc.collision_radius)
+    local bullets = entity.group:nearby_classname("Bullet", entity.x, entity.y + 0.5, entity.z, desc.collision_distance)
     if next(bullets) then
         entity.health = entity.health - 1
         entity.hit_spring:pull(0.2)

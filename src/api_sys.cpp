@@ -11,6 +11,12 @@ static int sys_window_height(lua_State *L) {
     return 1;
 }
 
+static int sys_show_mouse(lua_State *L) {
+    bool show = lua_toboolean(L, 1);
+    sapp_show_mouse(show);
+    return 0;
+}
+
 static int sys_quit(lua_State *L) {
     (void)L;
     sapp_request_quit();
@@ -24,6 +30,8 @@ static int sys_platform(lua_State *L) {
     lua_pushstring(L, "macos");
 #elif defined(__EMSCRIPTEN__)
     lua_pushstring(L, "html5");
+#elif defined(__linux__)
+    lua_pushstring(L, "linux");
 #endif
     return 1;
 }
@@ -32,6 +40,7 @@ int sys_lib(lua_State *L) {
     const luaL_Reg libs[] = {
         {"window_width", sys_window_width},
         {"window_height", sys_window_height},
+        {"show_mouse", sys_show_mouse},
         {"quit", sys_quit},
         {"platform", sys_platform},
         {nullptr, nullptr},

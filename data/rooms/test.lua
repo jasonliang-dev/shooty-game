@@ -11,12 +11,15 @@ local FollowEnemy = require "entities.follow_enemy"
 local FlyingEnemy = require "entities.flying_enemy"
 local SpinSpikeEnemy = require "entities.spin_spike_enemy"
 local FishEnemy = require "entities.fish_enemy"
+local Crosshair = require "entities.crosshair"
 local EntityGroup = require "entity_group"
 local Camera = require "camera"
 
 local RoomTest = class()
 
 function RoomTest:new()
+    sys.show_mouse(false)
+
     local spawn = tmx_lv1:object_by_type "spawn"
 
     self.camera = Camera(spawn.x, 0, spawn.y, quat.euler(math.pi / 6, 0, 0))
@@ -89,9 +92,17 @@ function RoomTest:new()
         x = spawn.x,
         z = spawn.y,
     })
+
+    self.group:add(Crosshair, {
+        camera = self.camera,
+    })
 end
 
 function RoomTest:update(dt)
+    if keyboard.pressed "escape" then
+        self.rooms.go "menu"
+    end
+
     self.group:update(dt)
 
     self.camera.target = {

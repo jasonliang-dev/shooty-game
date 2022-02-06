@@ -48,6 +48,9 @@ const char *Font::try_create(const char *filename, float size) {
     stbtt_PackFontRanges(&spc, ttf, 0, &range, 1);
     stbtt_PackEnd(&spc);
 
+    stbtt_GetFontVMetrics(&m_info, &m_ascent, &m_descent, &m_linegap);
+    m_scale = stbtt_ScaleForPixelHeight(&m_info, size);
+
     m_info.data = nullptr;
 
     u8 *rgba = new u8[width * height * 4];
@@ -93,24 +96,18 @@ float Font::width(const char *text) const {
     return width;
 }
 
-float Font::height() const { return m_size; }
+float Font::height() const {
+    return (m_ascent - m_descent + m_linegap) * m_scale;
+}
+
+float Font::size() const { return m_size; }
+float Font::baseline() const { return m_ascent * m_scale; }
 
 float Font::print(Renderer &renderer, const FontPrintDesc &desc) const {
     const char *text = desc.text;
 
     float x = desc.x;
-    if (desc.alignment & FONT_ALIGN_RIGHT) {
-        x -= width(text);
-    } else if (desc.alignment & FONT_ALIGN_CENTER) {
-        x -= width(text) / 2;
-    }
-
-    float y = desc.y;
-    if (desc.alignment & FONT_ALIGN_TOP) {
-        y += m_size;
-    } else if (desc.alignment & FONT_ALIGN_MIDDLE) {
-        y += m_size / 2;
-    }
+    float y = desc.y + m_ascent * m_scale;
 
     u8 r = desc.color[0];
     u8 g = desc.color[1];
