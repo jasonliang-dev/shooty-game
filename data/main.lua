@@ -14,6 +14,7 @@ function core.init()
     math.randomseed(0, 0)
 
     snd.master_volume(0.5)
+    default_pass_clear_color = {0, 0, 0, 255}
 
     atl_tiles = assert(Atlas "data/content/tiles.rtpa")
     atl_entities = assert(Atlas "data/content/entities.rtpa")
@@ -49,14 +50,17 @@ function core.frame(dt)
     rooms.current:update(dt)
 
     local draws_last_frame = gfx.draw_count()
-    gfx.begin_draw()
+    gfx.begin_draw {
+        color = default_pass_clear_color,
+    }
 
     rooms.current:draw()
 
-    gfx.bind_mvp(mat.ortho(0, sys.window_width(), sys.window_height(), 0, -1, 1))
-    fnt_small:print(string.format("FPS: %.2f", 1 / dt), 10, 8)
-    fnt_small:print(string.format("Delta Time: %.2fms", dt * 1000), 10, 28)
-    fnt_small:print(string.format("Draws: %d", draws_last_frame), 10, 48)
+    -- local r, g, b, a = 0, 0, 0, 255
+    -- gfx.bind_mvp(mat.ortho(0, sys.window_width(), sys.window_height(), 0, -1, 1))
+    -- fnt_small:print(string.format("FPS: %.2f", 1 / dt), 10, 8, r, g, b, a)
+    -- fnt_small:print(string.format("Delta Time: %.2fms", dt * 1000), 10, 28, r, g, b, a)
+    -- fnt_small:print(string.format("Draws: %d", draws_last_frame), 10, 48, r, g, b, a)
 
     gfx.end_draw()
 

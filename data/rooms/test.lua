@@ -19,6 +19,7 @@ local RoomTest = class()
 
 function RoomTest:new()
     sys.show_mouse(false)
+    default_pass_clear_color = {223, 246, 245, 255}
 
     local spawn = tmx_lv1:object_by_type "spawn"
 

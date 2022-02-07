@@ -1,5 +1,6 @@
 local Spring = require "spring"
 local Progress = require "progress"
+local Corpse = require "entities.corpse"
 
 local enemy_common = {}
 
@@ -33,6 +34,13 @@ end
 
 function enemy_common.on_death(entity)
     snd.play "data/content/death.wav"
+
+    entity.group:add(Corpse, {
+        x = entity.x,
+        y = entity.y,
+        z = entity.z,
+        uv = entity.sprite:uv(),
+    })
 end
 
 function enemy_common.draw(entity)

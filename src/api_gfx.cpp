@@ -4,7 +4,26 @@
 #include "deps/sokol_gfx.h"
 
 static int gfx_begin_draw(lua_State *L) {
-    sg_begin_default_pass(sg_pass_action{}, sapp_width(), sapp_height());
+    lua_getfield(L, 1, "color");
+
+    const auto geti_checknumber = [](lua_State *L, int index, int n) {
+        lua_rawgeti(L, index, n);
+        float num = (float)luaL_checknumber(L, -1);
+        lua_pop(L, 1);
+        return num;
+    };
+
+    float r = geti_checknumber(L, -1, 1) / 255;
+    float g = geti_checknumber(L, -1, 2) / 255;
+    float b = geti_checknumber(L, -1, 3) / 255;
+    float a = geti_checknumber(L, -1, 4) / 255;
+
+    lua_pop(L, 1);
+
+    sg_pass_action act{};
+    act.colors[0].action = SG_ACTION_CLEAR;
+    act.colors[0].value = {r, g, b, a};
+    sg_begin_default_pass(act, sapp_width(), sapp_height());
     app->renderer.begin();
     return 0;
 }

@@ -8,6 +8,7 @@ local RoomMenu = class()
 
 function RoomMenu:new()
     sys.show_mouse(true)
+    default_pass_clear_color = {128, 128, 128, 255}
 
     self.group = EntityGroup()
 

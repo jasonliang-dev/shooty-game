@@ -6,6 +6,13 @@
 #include "tileset.h"
 #include <string.h>
 
+static void *field_touserdata(lua_State *L, int arg, const char *key) {
+    lua_getfield(L, arg, key);
+    void *result = lua_touserdata(L, -1);
+    lua_pop(L, 1);
+    return result;
+}
+
 static int aux_make_texture(lua_State *L) {
     const char *filename = luaL_checkstring(L, 1);
 
@@ -67,7 +74,7 @@ static int aux_make_font(lua_State *L) {
     lua_setfield(L, -2, "baseline");
 
     lua_pushcfunction(L, [](lua_State *L) -> int {
-        Font *font = (Font *)luax_field_touserdata(L, 1, "udata");
+        Font *font = (Font *)field_touserdata(L, 1, "udata");
         const char *text = luaL_checkstring(L, 2);
         lua_pushnumber(L, font->width(text));
         return 1;
@@ -75,17 +82,24 @@ static int aux_make_font(lua_State *L) {
     lua_setfield(L, -2, "width");
 
     lua_pushcfunction(L, [](lua_State *L) -> int {
-        Font *font = (Font *)luax_field_touserdata(L, 1, "udata");
+        Font *font = (Font *)field_touserdata(L, 1, "udata");
 
         const char *text = luaL_checkstring(L, 2);
         float x = (float)luaL_checknumber(L, 3);
         float y = (float)luaL_checknumber(L, 4);
+        u8 r = (u8)luaL_optinteger(L, 5, 255);
+        u8 g = (u8)luaL_optinteger(L, 6, 255);
+        u8 b = (u8)luaL_optinteger(L, 7, 255);
+        u8 a = (u8)luaL_optinteger(L, 8, 255);
 
         FontPrintDesc desc{};
         desc.text = text;
         desc.x = x;
         desc.y = y;
-        memset(desc.color, 255, sizeof(u8) * 4);
+        desc.color[0] = r;
+        desc.color[1] = g;
+        desc.color[2] = b;
+        desc.color[3] = a;
 
         float n = font->print(app->renderer, desc);
 
@@ -96,7 +110,7 @@ static int aux_make_font(lua_State *L) {
 
     lua_createtable(L, 0, 1);
     lua_pushcfunction(L, [](lua_State *L) -> int {
-        Font *font = (Font *)luax_field_touserdata(L, 1, "udata");
+        Font *font = (Font *)field_touserdata(L, 1, "udata");
         font->destroy();
         delete font;
         return 0;
@@ -127,7 +141,7 @@ static int aux_make_tileset(lua_State *L) {
 
     lua_createtable(L, 0, 1);
     lua_pushcfunction(L, [](lua_State *L) -> int {
-        Tileset *tileset = (Tileset *)luax_field_touserdata(L, 1, "udata");
+        Tileset *tileset = (Tileset *)field_touserdata(L, 1, "udata");
         tileset->destroy();
         delete tileset;
         return 0;
@@ -140,7 +154,7 @@ static int aux_make_tileset(lua_State *L) {
 
 static int aux_make_tilemap(lua_State *L) {
     const char *filename = luaL_checkstring(L, 1);
-    Tileset *tileset = (Tileset *)luax_field_touserdata(L, 2, "udata");
+    Tileset *tileset = (Tileset *)field_touserdata(L, 2, "udata");
 
     Tilemap *map = new Tilemap;
     const char *err = map->try_create(filename, *tileset);
@@ -155,7 +169,7 @@ static int aux_make_tilemap(lua_State *L) {
     lua_setfield(L, -2, "udata");
 
     lua_pushcfunction(L, [](lua_State *L) -> int {
-        Tilemap *map = (Tilemap *)luax_field_touserdata(L, 1, "udata");
+        Tilemap *map = (Tilemap *)field_touserdata(L, 1, "udata");
 
         RenMatrix mat{};
         for (int i = 0; i < 16; i++) {
@@ -172,7 +186,7 @@ static int aux_make_tilemap(lua_State *L) {
     lua_setfield(L, -2, "draw");
 
     lua_pushcfunction(L, [](lua_State *L) -> int {
-        Tilemap *map = (Tilemap *)luax_field_touserdata(L, 1, "udata");
+        Tilemap *map = (Tilemap *)field_touserdata(L, 1, "udata");
 
         float x = (float)luaL_checknumber(L, 2);
         float y = (float)luaL_checknumber(L, 3);
@@ -182,7 +196,7 @@ static int aux_make_tilemap(lua_State *L) {
     lua_setfield(L, -2, "point_collision");
 
     lua_pushcfunction(L, [](lua_State *L) -> int {
-        Tilemap *map = (Tilemap *)luax_field_touserdata(L, 1, "udata");
+        Tilemap *map = (Tilemap *)field_touserdata(L, 1, "udata");
 
         float x = (float)luaL_checknumber(L, 2);
         float y = (float)luaL_checknumber(L, 3);
@@ -200,7 +214,7 @@ static int aux_make_tilemap(lua_State *L) {
     lua_setfield(L, -2, "point_move");
 
     lua_pushcfunction(L, [](lua_State *L) -> int {
-        Tilemap *map = (Tilemap *)luax_field_touserdata(L, 1, "udata");
+        Tilemap *map = (Tilemap *)field_touserdata(L, 1, "udata");
         const char *type = luaL_checkstring(L, 2);
         TilemapObject obj = map->object_by_type(type);
 
@@ -224,7 +238,7 @@ static int aux_make_tilemap(lua_State *L) {
     lua_setfield(L, -2, "object_by_type");
 
     lua_pushcfunction(L, [](lua_State *L) -> int {
-        Tilemap *map = (Tilemap *)luax_field_touserdata(L, 1, "udata");
+        Tilemap *map = (Tilemap *)field_touserdata(L, 1, "udata");
         const char *type = luaL_checkstring(L, 2);
 
         TilemapObject *objs = nullptr;
@@ -256,7 +270,7 @@ static int aux_make_tilemap(lua_State *L) {
     lua_setfield(L, -2, "objects_by_type");
 
     lua_pushcfunction(L, [](lua_State *L) -> int {
-        Tilemap *map = (Tilemap *)luax_field_touserdata(L, 1, "udata");
+        Tilemap *map = (Tilemap *)field_touserdata(L, 1, "udata");
         TilemapObject *objs = nullptr;
         int object_count = map->objects(objs);
 
@@ -281,7 +295,7 @@ static int aux_make_tilemap(lua_State *L) {
     lua_setfield(L, -2, "objects");
 
     lua_pushcfunction(L, [](lua_State *L) -> int {
-        Tilemap *map = (Tilemap *)luax_field_touserdata(L, 1, "udata");
+        Tilemap *map = (Tilemap *)field_touserdata(L, 1, "udata");
 
         int start_x = (int)luaL_checknumber(L, 2);
         int start_y = (int)luaL_checknumber(L, 3);
@@ -315,7 +329,7 @@ static int aux_make_tilemap(lua_State *L) {
 
     lua_createtable(L, 0, 1);
     lua_pushcfunction(L, [](lua_State *L) -> int {
-        Tilemap *map = (Tilemap *)luax_field_touserdata(L, 1, "udata");
+        Tilemap *map = (Tilemap *)field_touserdata(L, 1, "udata");
         map->destroy();
         delete map;
         return 0;

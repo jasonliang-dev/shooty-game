@@ -21,12 +21,12 @@ function Button:new(desc)
     self.hot = false
     self.pad_x = {val = 15, def = 15}
     self.pad_y = {val = 8}
-    self.off_y = Spring()
+    self.off_y_spring = Spring()
 end
 
 function Button:update(dt)
     self.on_update(self, dt)
-    self.off_y:update(dt)
+    self.off_y_spring:update(dt)
 
     self.text_x = self.x + (self.w - self.font:width(self.text)) / 2
 
@@ -40,7 +40,7 @@ function Button:update(dt)
 
     if hot and not self.hot then
         flux.to(self.pad_x, 0.6, {val = 25}):ease "elasticout"
-        self.off_y:pull(1)
+        self.off_y_spring:pull(1)
     elseif not hot and self.hot then
         flux.to(self.pad_x, 1, {val = self.pad_x.def}):ease "elasticout"
     end
@@ -66,7 +66,7 @@ function Button:draw()
     gfx.v3_t2_c4(x2,       y2, 0, 0, 0, r, g, b, a)
     gfx.v3_t2_c4(x2 + shr, y1, 0, 0, 0, r, g, b, a)
 
-    self.font:print(self.text, self.text_x, self.y - self.off_y.x * 2)
+    self.font:print(self.text, self.text_x, self.y - self.off_y_spring.x * 2)
 end
 
 return Button
