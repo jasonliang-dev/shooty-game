@@ -1,13 +1,13 @@
 local class = require "class"
 local Sprite = require "sprite"
 local vec2 = require "vec".vec2
-local common = require "enemy_common"
+local enemy_common = require "enemy_common"
 
 local FollowEnemy = class()
 FollowEnemy.classname = "FollowEnemy"
 
 function FollowEnemy:new(desc)
-    common.init(self, desc)
+    enemy_common.init(self, desc)
 
     self.map = desc.map
 
@@ -27,9 +27,9 @@ function FollowEnemy:new(desc)
 end
 
 function FollowEnemy:update(dt)
-    common.update(self, {
+    enemy_common.update(self, {
         dt = dt,
-        collision_distance = 0.9,
+        collision_distance = 0.8,
     })
     self.sprite:update(dt)
 
@@ -46,11 +46,11 @@ function FollowEnemy:update(dt)
 end
 
 function FollowEnemy:on_death()
-    common.on_death(self)
+    enemy_common.on_death(self)
 end
 
 function FollowEnemy:draw()
-    common.draw(self)
+    enemy_common.draw(self)
 end
 
 return FollowEnemy

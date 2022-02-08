@@ -7,7 +7,7 @@ Corpse.classname = "Corpse"
 function Corpse:new(desc)
     self.x = desc.x
     self.y = desc.y
-    self.dy = 6
+    self.dy = 8
     self.z = desc.z
     self.rot = 0
     self.uv = desc.uv

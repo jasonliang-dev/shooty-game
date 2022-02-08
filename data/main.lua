@@ -56,11 +56,11 @@ function core.frame(dt)
 
     rooms.current:draw()
 
-    -- local r, g, b, a = 0, 0, 0, 255
-    -- gfx.bind_mvp(mat.ortho(0, sys.window_width(), sys.window_height(), 0, -1, 1))
-    -- fnt_small:print(string.format("FPS: %.2f", 1 / dt), 10, 8, r, g, b, a)
-    -- fnt_small:print(string.format("Delta Time: %.2fms", dt * 1000), 10, 28, r, g, b, a)
-    -- fnt_small:print(string.format("Draws: %d", draws_last_frame), 10, 48, r, g, b, a)
+    local r, g, b, a = 0, 0, 0, 255
+    gfx.bind_mvp(mat.ortho(0, sys.window_width(), sys.window_height(), 0, -1, 1))
+    fnt_small:print(string.format("FPS: %.2f", 1 / dt), 10, 8, r, g, b, a)
+    fnt_small:print(string.format("Delta Time: %.2fms", dt * 1000), 10, 28, r, g, b, a)
+    fnt_small:print(string.format("Draws: %d", draws_last_frame), 10, 48, r, g, b, a)
 
     gfx.end_draw()
 

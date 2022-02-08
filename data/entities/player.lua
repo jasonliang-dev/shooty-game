@@ -17,14 +17,21 @@ function Player:new(desc)
     self.camera = desc.camera
     self.map = desc.map
 
+    self.spawn_x = desc.x
+    self.spawn_z = desc.z
+
+    self.health = desc.health
     self.x = desc.x
     self.y = 0
     self.z = desc.z
     self.dx = 0
+    self.dy = 0
     self.dz = 0
-    self.p_dash = Progress(0.25)
     self.facing_right = false
     self.shoot_spring = Spring()
+    self.hit_this_frame = false
+    self.p_dash = Progress(0.25)
+    self.p_invulnerable = Progress(1, true)
 
     self.sprite = Sprite {
         atlas = atl_entities,
@@ -32,7 +39,9 @@ function Player:new(desc)
         animations = {
             idle = {ms_per_frame = 110, frames = {"char1_1"}},
             walk = {ms_per_frame = 110, frames = {"char1_2", "char1_1"}},
-            dash = {ms_per_frame = 40, frames = {"char1_1"}},
+            dash = {ms_per_frame = 110, frames = {"char1_1"}},
+            hurt = {ms_per_frame = 110, frames = {"char1_1"}},
+            sink = {ms_per_frame = 110, frames = {"char1_1"}},
         },
     }
 
@@ -43,6 +52,8 @@ function Player:new(desc)
             idle = {enter = self.fsm_enter_idle, update = self.fsm_idle},
             walk = {enter = self.fsm_enter_walk, update = self.fsm_walk},
             dash = {enter = self.fsm_enter_dash, update = self.fsm_dash, leave = self.fsm_leave_dash},
+            hurt = {enter = self.fsm_enter_hurt, update = self.fsm_hurt},
+            sink = {enter = self.fsm_enter_sink, update = self.fsm_sink, leave = self.fsm_leave_sink},
         },
     }
 end
@@ -53,37 +64,50 @@ end
 
 function Player:update(dt)
     self.shoot_spring:update(dt)
+    self.p_invulnerable:update(dt)
     self.sprite:update(dt)
     self.fsm:update(dt)
+end
 
-    local state = self.fsm.current_state
-    if state == "idle" or state == "walk" then
-        local cast = 50
-        local off_y = 0.4
-        local raycast = ray.vs_quad {
-            ray = ray.from_screen(mouse.x, mouse.y, self.camera),
-            v1 = {x = -cast, y = off_y, z = -cast},
-            v2 = {x = -cast, y = off_y, z = cast},
-            v3 = {x = cast, y = off_y, z = cast},
-            v4 = {x = cast, y = off_y, z = -cast},
-        }
+function Player:late_update(dt)
+    if self.hit_this_frame then
+        if self.p_invulnerable:percent() >= 1 then
+            self.p_invulnerable.time = 0
+            self.dx = self.hit_this_frame.dx
+            self.dz = self.hit_this_frame.dz
+            self.fsm:transition "hurt"
+        end
 
-        if raycast then
-            self.facing_right = raycast.point.x > self.x
+        self.hit_this_frame = nil
+    end
+end
 
-            if mouse.clicked "left" then
-                local dx = raycast.point.x - self.x
-                local dz = raycast.point.z - self.z
-                dx, dz = vec2.normalize(dx, dz)
-                self.group:add(Bullet, {
-                    x = self.x,
-                    z = self.z,
-                    dx = dx,
-                    dz = dz,
-                    rot = lume.angle(self.x, self.z, raycast.point.x, raycast.point.z),
-                })
-                self.shoot_spring:pull(0.08)
-            end
+function Player:handle_shoot()
+    local cast = 50
+    local off_y = 0.4
+    local raycast = ray.vs_quad {
+        ray = ray.from_screen(mouse.x, mouse.y, self.camera),
+        v1 = {x = -cast, y = off_y, z = -cast},
+        v2 = {x = -cast, y = off_y, z = cast},
+        v3 = {x = cast, y = off_y, z = cast},
+        v4 = {x = cast, y = off_y, z = -cast},
+    }
+
+    if raycast then
+        self.facing_right = raycast.point.x > self.x
+
+        if mouse.clicked "left" then
+            local dx = raycast.point.x - self.x
+            local dz = raycast.point.z - self.z
+            dx, dz = vec2.normalize(dx, dz)
+            self.group:add(Bullet, {
+                x = self.x,
+                z = self.z,
+                dx = dx,
+                dz = dz,
+                rot = lume.angle(self.x, self.z, raycast.point.x, raycast.point.z),
+            })
+            self.shoot_spring:pull(0.08)
         end
     end
 end
@@ -103,6 +127,8 @@ function Player:fsm_idle(dt)
     if self.dx ~= 0 or self.dz ~= 0 then
         self.fsm:transition "walk"
     end
+
+    self:handle_shoot()
 end
 
 function Player:fsm_enter_walk()
@@ -127,6 +153,8 @@ function Player:fsm_walk(dt)
     end
 
     self.x, self.z = self.map:point_move(self.x, self.z, self.dx * 5 * dt, self.dz * 5 * dt, 4)
+
+    self:handle_shoot()
 end
 
 function Player:fsm_enter_dash()
@@ -150,14 +178,64 @@ function Player:fsm_leave_dash()
     self.p_dash.time = 0
 end
 
-function Player:draw()
-    local rad = lume.lerp(0, math.pi * 2, self.p_dash:percent())
-    if self.dx > 0 then
-        rad = -rad
+function Player:fsm_enter_hurt()
+    self.sprite:play "hurt"
+    self.health = self.health - 1
+    self.dy = 6
+    self.p_invulnerable.time = 0
+end
+
+function Player:fsm_hurt(dt)
+    self.dy = self.dy - 30 * dt
+    self.y = self.y + self.dy * dt
+
+    self.x = self.x + self.dx * 4 * dt
+    self.z = self.z + self.dz * 4 * dt
+
+    if self.y <= 0 then
+        if self.map:point_collision(self.x, self.z) then
+            self.fsm:transition "sink"
+        else
+            self.y = 0
+            self.fsm:transition "idle"
+        end
     end
+end
+
+function Player:fsm_enter_sink()
+    self.sprite:play "sink"
+end
+
+function Player:fsm_sink(dt)
+    self.y = self.y - 2 * dt
+    if self.y < -1 then
+        self.fsm:transition "idle"
+    end
+end
+
+function Player:fsm_leave_sink()
+    self.y = 0
+    self.x = self.spawn_x
+    self.z = self.spawn_z
+    self.p_invulnerable.time = 0
+end
+
+function Player:draw()
+    if self.p_invulnerable:percent() <= 1 then
+        local blink_range = math.fmod(self.p_invulnerable.time, 0.1)
+        if blink_range < 0.05 then
+            return
+        end
+    end
+
+    local rad = lume.lerp(0, math.pi * 2, self.p_dash:percent())
 
     local x1, y1, z1, x2, y2, z2, x3, y3, x4, y4
     if self.dx ~= 0 then
+        if self.dx > 0 then
+            rad = -rad
+        end
+
         x1, y1 = vec2.rotate(rad, self.x - 0.5, self.y + 1.2, self.x, self.y + 0.6)
         x2, y2 = vec2.rotate(rad, self.x - 0.5, self.y + 0.0, self.x, self.y + 0.6)
         x3, y3 = vec2.rotate(rad, self.x + 0.5, self.y + 0.0, self.x, self.y + 0.6)
@@ -167,8 +245,8 @@ function Player:draw()
         x1, x2 = self.x - 0.5, self.x - 0.5
         x3, x4 = self.x + 0.5, self.x + 0.5
 
-        y1, z1 = vec2.rotate(rad, 1.2, self.z, 0.6, self.z)
-        y2, z2 = vec2.rotate(rad, 0.0, self.z, 0.6, self.z)
+        y1, z1 = vec2.rotate(rad, self.y + 1.2, self.z, self.y + 0.6, self.z)
+        y2, z2 = vec2.rotate(rad, self.y + 0.0, self.z, self.y + 0.6, self.z)
         y3 = y2
         y4 = y1
     end

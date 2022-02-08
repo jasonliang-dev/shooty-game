@@ -2,9 +2,9 @@ local class = require "class"
 
 local Progress = class()
 
-function Progress:new(limit)
+function Progress:new(limit, same)
     self.limit = limit
-    self.time = 0
+    self.time = same and limit or 0
 end
 
 function Progress:update(dt)

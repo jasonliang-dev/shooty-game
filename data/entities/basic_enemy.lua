@@ -2,13 +2,13 @@ local class = require "class"
 local Sprite = require "sprite"
 local Spring = require "spring"
 local Progress = require "progress"
-local common = require "enemy_common"
+local enemy_common = require "enemy_common"
 
 local BasicEnemy = class()
 BasicEnemy.classname = "BasicEnemy"
 
 function BasicEnemy:new(desc)
-    common.init(self, desc)
+    enemy_common.init(self, desc)
 
     self.map = desc.map
 
@@ -28,9 +28,9 @@ function BasicEnemy:new(desc)
 end
 
 function BasicEnemy:update(dt)
-    common.update(self, {
+    enemy_common.update(self, {
         dt = dt,
-        collision_distance = 0.9,
+        collision_distance = 0.8,
     })
     self.sprite:update(dt)
 
@@ -43,11 +43,11 @@ function BasicEnemy:update(dt)
 end
 
 function BasicEnemy:on_death()
-    common.on_death(self)
+    enemy_common.on_death(self)
 end
 
 function BasicEnemy:draw()
-    common.draw(self)
+    enemy_common.draw(self)
 end
 
 return BasicEnemy

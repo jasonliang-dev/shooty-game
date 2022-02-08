@@ -84,6 +84,12 @@ function EntityGroup:update(dt)
 
         ::continue::
     end
+
+    for _, entity in pairs(self.group_by_id) do
+        if entity.late_update then
+            entity:late_update(dt)
+        end
+    end
 end
 
 function EntityGroup:draw()

@@ -92,6 +92,7 @@ function RoomTest:new()
         camera = self.camera,
         x = spawn.x,
         z = spawn.y,
+        health = 5,
     })
 
     self.group:add(Crosshair, {

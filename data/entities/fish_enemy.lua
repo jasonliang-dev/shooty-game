@@ -1,12 +1,12 @@
 local class = require "class"
-local common = require "enemy_common"
+local enemy_common = require "enemy_common"
 local lume = require "deps.lume"
 local Sprite = require "sprite"
 
 local FishEnemy = class()
 
 function FishEnemy:new(desc)
-    common.init(self, desc)
+    enemy_common.init(self, desc)
 
     self.x = desc.x
     self.y = 1 / 0
@@ -31,7 +31,7 @@ function FishEnemy:update(dt)
     local y = self.y
     self.y = math.cos(self.time_y * 4)
 
-    common.update(self, {
+    enemy_common.update(self, {
         dt = dt,
         collision_distance = 0.8,
     })
@@ -45,11 +45,11 @@ function FishEnemy:update(dt)
 end
 
 function FishEnemy:on_death()
-    common.on_death(self)
+    enemy_common.on_death(self)
 end
 
 function FishEnemy:draw()
-    common.draw(self)
+    enemy_common.draw(self)
 end
 
 return FishEnemy

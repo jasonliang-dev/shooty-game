@@ -1,23 +1,29 @@
 local Spring = require "spring"
 local Progress = require "progress"
 local Corpse = require "entities.corpse"
+local vec3 = require "vec".vec3
 
 local enemy_common = {}
 
 function enemy_common.init(entity, desc)
     entity.hit_spring = Spring()
-    entity.p_hit = Progress(0.08)
-    entity.p_hit.time = 1 / 0
+    entity.p_hit = Progress(0.1, true)
     entity.health = desc.health
 end
 
 function enemy_common.update(entity, desc)
     local dt = desc.dt
+    local collision_distance = desc.collision_distance or 1
 
     entity.hit_spring:update(dt)
     entity.p_hit:update(dt)
 
-    local bullets = entity.group:nearby_classname("Bullet", entity.x, entity.y + 0.5, entity.z, desc.collision_distance)
+    enemy_common.bullet_collision(entity, collision_distance)
+    enemy_common.player_collision(entity, collision_distance)
+end
+
+function enemy_common.bullet_collision(entity, distance)
+    local bullets = entity.group:nearby_classname("Bullet", entity.x, entity.y + 0.5, entity.z, distance)
     if next(bullets) then
         entity.health = entity.health - 1
         entity.hit_spring:pull(0.2)
@@ -29,6 +35,20 @@ function enemy_common.update(entity, desc)
 
     if entity.health <= 0 then
         entity.dead = true
+    end
+end
+
+function enemy_common.player_collision(entity, distance)
+    local player = entity.group.player
+    local dx = player.x - entity.x
+    local dy = player.y - entity.y
+    local dz = player.z - entity.z
+    local dist = math.sqrt(dx * dx + dy * dy + dz * dz)
+    if dist <= distance then
+        player.hit_this_frame = {
+            dx = dx / dist,
+            dz = dz / dist,
+        }
     end
 end
 

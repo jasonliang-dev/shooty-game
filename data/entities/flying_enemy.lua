@@ -4,13 +4,13 @@ local lume = require "deps.lume"
 local Sprite = require "sprite"
 local StateMachine = require "state_machine"
 local Progress = require "progress"
-local common = require "enemy_common"
+local enemy_common = require "enemy_common"
 
 local FlyingEnemy = class()
 FlyingEnemy.classname = "FlyingEnemy"
 
 function FlyingEnemy:new(desc)
-    common.init(self, desc)
+    enemy_common.init(self, desc)
 
     self.y_init = 1.5
     self.x = desc.x
@@ -43,7 +43,7 @@ function FlyingEnemy:new(desc)
 end
 
 function FlyingEnemy:update(dt)
-    common.update(self, {
+    enemy_common.update(self, {
         dt = dt,
         collision_distance = 0.9,
     })
@@ -101,11 +101,11 @@ function FlyingEnemy:fsm_attack(dt)
 end
 
 function FlyingEnemy:on_death()
-    common.on_death(self)
+    enemy_common.on_death(self)
 end
 
 function FlyingEnemy:draw()
-    common.draw(self)
+    enemy_common.draw(self)
 
     local x1 = self.x - 0.4
     local z1 = self.z - 0.4
