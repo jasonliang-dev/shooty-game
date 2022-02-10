@@ -358,15 +358,15 @@ bool Tilemap::a_star(PODVector<vec2> &out, int start_x, int start_y, int end_x,
     return false;
 }
 
-void Tilemap::draw(const Renderer &renderer, RenMatrix mvp,
-                   sg_image image) const {
+void Tilemap::draw(const Renderer &renderer, Matrix mvp, sg_image image) const {
     sg_apply_pipeline(renderer.pip());
     sg_apply_bindings({
         .vertex_buffers = {m_vbo},
         .index_buffer = renderer.quad_ibo(),
         .fs_images = {image},
     });
-    vs_params_t uniforms = {.u_mvp = mvp};
-    sg_apply_uniforms(SG_SHADERSTAGE_VS, SLOT_vs_params, SG_RANGE(uniforms));
+    vs_uniforms_default_t uniforms = {.u_mvp = mvp};
+    sg_apply_uniforms(SG_SHADERSTAGE_VS, SLOT_vs_uniforms_default,
+                      SG_RANGE(uniforms));
     sg_draw(0, m_tile_count * 6, 1);
 }

@@ -4,6 +4,7 @@ local Atlas = class()
 
 function Atlas:new(filename)
     self.sub_textures = {}
+    local count = 0
 
     local handle = assert(io.open(filename))
 
@@ -36,10 +37,13 @@ function Atlas:new(filename)
                     v2 = y + pad + h,
                 }
             end
+
+            count = count + 1
         end
     end
 
     handle:close()
+    print(string.format("Loaded atlas '%s' with %d subtextures", filename, count))
 end
 
 function Atlas:uv(name)

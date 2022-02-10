@@ -31,7 +31,7 @@ struct Tilemap {
     bool a_star(PODVector<vec2> &out, int start_x, int start_y, int end_x,
                 int end_y);
 
-    void draw(const Renderer &renderer, RenMatrix mvp, sg_image image) const;
+    void draw(const Renderer &renderer, Matrix mvp, sg_image image) const;
 
   private:
     sg_buffer m_vbo{};

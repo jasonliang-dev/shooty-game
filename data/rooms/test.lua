@@ -19,7 +19,7 @@ local RoomTest = class()
 
 function RoomTest:new()
     sys.show_mouse(false)
-    default_pass_clear_color = {223, 246, 245, 255}
+    default_pass_clear_color = {128, 128, 128, 255}
 
     local spawn = tmx_lv1:object_by_type "spawn"
 
@@ -117,10 +117,20 @@ end
 
 function RoomTest:draw()
     local view_projection = self.camera:view_projection()
-    gfx.bind_mvp(view_projection)
 
-    local mvp = mat.mul(mat.rotate(quat.euler(math.pi / 2, 0, 0)), view_projection)
+    local water_width = 160
+    local mvp = mat.chain(
+       view_projection,
+       mat.translate(-water_width / 2, -0.01, -water_width / 2),
+       mat.scale(water_width, 1, water_width),
+       mat.axis_rotate(1, 0, 0, math.pi / 2)
+    )
+    gfx.draw_water(mvp, water_width)
+
+    mvp = mat.mul(mat.axis_rotate(1, 0, 0, math.pi / 2), view_projection)
     tmx_lv1:draw(mvp, tsx_tiles.texture_id)
+
+    gfx.bind_mvp(view_projection)
     self.group:draw()
 end
 

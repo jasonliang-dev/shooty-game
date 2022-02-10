@@ -41,8 +41,7 @@ static int gfx_draw_count(lua_State *L) {
 }
 
 static int gfx_bind_mvp(lua_State *L) {
-    RenMatrix m{};
-
+    Matrix m{};
     for (int i = 0; i < 16; i++) {
         lua_rawgeti(L, 1, i + 1);
         m.arr[i] = (float)luaL_checknumber(L, -1);
@@ -149,6 +148,20 @@ static int gfx_v3_t2_c4_f4(lua_State *L) {
     return 0;
 }
 
+static int gfx_draw_water(lua_State *L) {
+    Matrix mvp{};
+    for (int i = 0; i < 16; i++) {
+        lua_rawgeti(L, 1, i + 1);
+        mvp.arr[i] = (float)luaL_checknumber(L, -1);
+        lua_pop(L, 1);
+    }
+
+    float scale = (float)luaL_checknumber(L, 2);
+
+    app->water.draw(mvp, scale, app->time_now / 1000000000.0f);
+    return 0;
+}
+
 int gfx_lib(lua_State *L) {
     const luaL_Reg libs[] = {
         {"begin_draw", gfx_begin_draw},
@@ -161,6 +174,7 @@ int gfx_lib(lua_State *L) {
         {"v3_t2_c4", gfx_v3_t2_c4},
         {"v3_t2_f4", gfx_v3_t2_f4},
         {"v3_t2_c4_f4", gfx_v3_t2_c4_f4},
+        {"draw_water", gfx_draw_water},
         {nullptr, nullptr},
     };
 

@@ -34,24 +34,24 @@ void Renderer::create(int vertex_capacity) {
     sg_shader shd_default =
         sg_make_shader(shd_default_shader_desc(sg_query_backend()));
 
-    sg_pipeline_desc pdesc{};
-    pdesc.shader = shd_default;
-    pdesc.layout.attrs[ATTR_vert_a_position].format = SG_VERTEXFORMAT_FLOAT3;
-    pdesc.layout.attrs[ATTR_vert_a_position].buffer_index = 0;
-    pdesc.layout.attrs[ATTR_vert_a_texindex].format = SG_VERTEXFORMAT_FLOAT2;
-    pdesc.layout.attrs[ATTR_vert_a_texindex].buffer_index = 0;
-    pdesc.layout.attrs[ATTR_vert_a_color].format = SG_VERTEXFORMAT_UBYTE4N;
-    pdesc.layout.attrs[ATTR_vert_a_color].buffer_index = 0;
-    pdesc.layout.attrs[ATTR_vert_a_fog].format = SG_VERTEXFORMAT_UBYTE4N;
-    pdesc.layout.attrs[ATTR_vert_a_fog].buffer_index = 0;
-    pdesc.index_type = SG_INDEXTYPE_UINT16;
-    pdesc.depth.compare = SG_COMPAREFUNC_LESS_EQUAL;
-    pdesc.depth.write_enabled = true;
-    pdesc.colors[0].blend.enabled = true;
-    pdesc.colors[0].blend.src_factor_rgb = SG_BLENDFACTOR_SRC_ALPHA;
-    pdesc.colors[0].blend.dst_factor_rgb = SG_BLENDFACTOR_ONE_MINUS_SRC_ALPHA;
+    sg_pipeline_desc desc{};
+    desc.shader = shd_default;
+    desc.layout.attrs[ATTR_vert_a_position].format = SG_VERTEXFORMAT_FLOAT3;
+    desc.layout.attrs[ATTR_vert_a_position].buffer_index = 0;
+    desc.layout.attrs[ATTR_vert_a_texindex].format = SG_VERTEXFORMAT_FLOAT2;
+    desc.layout.attrs[ATTR_vert_a_texindex].buffer_index = 0;
+    desc.layout.attrs[ATTR_vert_a_color].format = SG_VERTEXFORMAT_UBYTE4N;
+    desc.layout.attrs[ATTR_vert_a_color].buffer_index = 0;
+    desc.layout.attrs[ATTR_vert_a_fog].format = SG_VERTEXFORMAT_UBYTE4N;
+    desc.layout.attrs[ATTR_vert_a_fog].buffer_index = 0;
+    desc.index_type = SG_INDEXTYPE_UINT16;
+    desc.depth.compare = SG_COMPAREFUNC_LESS_EQUAL;
+    desc.depth.write_enabled = true;
+    desc.colors[0].blend.enabled = true;
+    desc.colors[0].blend.src_factor_rgb = SG_BLENDFACTOR_SRC_ALPHA;
+    desc.colors[0].blend.dst_factor_rgb = SG_BLENDFACTOR_ONE_MINUS_SRC_ALPHA;
 
-    m_pip = sg_make_pipeline(pdesc);
+    m_pip = sg_make_pipeline(desc);
 
     m_vertices = new RenVertex[vertex_capacity]{};
     m_vertex_count = 0;
@@ -82,8 +82,8 @@ void Renderer::flush() {
         .index_buffer = m_ibo,
         .fs_images = {u_texture},
     });
-    vs_params_t uniforms = {.u_mvp = u_mvp};
-    sg_apply_uniforms(SG_SHADERSTAGE_VS, SLOT_vs_params, SG_RANGE(uniforms));
+    vs_uniforms_default_t uniforms = {.u_mvp = u_mvp};
+    sg_apply_uniforms(SG_SHADERSTAGE_VS, SLOT_vs_uniforms_default, SG_RANGE(uniforms));
     sg_draw(0, m_vertex_count * 6 / 4, 1);
 
     m_vertex_count = 0;
@@ -107,7 +107,7 @@ void Renderer::push(RenVertex *vertices, int n) {
     m_vertex_count += n;
 }
 
-void Renderer::mvp(RenMatrix mat) {
+void Renderer::mvp(Matrix mat) {
     flush();
     u_mvp = mat;
 }
@@ -122,5 +122,5 @@ void Renderer::texture(sg_image tex) {
 int Renderer::draw_count() const { return m_draw_count; }
 sg_pipeline Renderer::pip() const { return m_pip; }
 sg_buffer Renderer::quad_ibo() const { return m_ibo; }
-RenMatrix Renderer::mvp() const { return u_mvp; }
+Matrix Renderer::mvp() const { return u_mvp; }
 sg_image Renderer::texture() const { return u_texture; }

@@ -17,6 +17,7 @@ add_executable(${PROJECT_NAME}
     src/texture.cpp
     src/tilemap.cpp
     src/tileset.cpp
+    src/water_renderer.cpp
     src/main.cpp
 )
 

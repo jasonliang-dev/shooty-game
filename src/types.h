@@ -24,4 +24,9 @@ struct Rect {
     float x1, y1, x2, y2;
 };
 
+union Matrix {
+    float cols[4][4];
+    float arr[16];
+};
+
 #define array_count(a) (sizeof(a) / sizeof((a)[0]))

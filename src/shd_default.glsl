@@ -1,7 +1,7 @@
-@ctype mat4 RenMatrix
+@ctype mat4 Matrix
 
 @vs vert
-uniform vs_params {
+uniform vs_uniforms_default {
     mat4 u_mvp;
 };
 
@@ -23,13 +23,13 @@ void main() {
 @end
 
 @fs frag
+uniform sampler2D u_texture;
+
 in vec2 v_texindex;
 in vec4 v_color;
 in vec4 v_fog;
 
 out vec4 f_color;
-
-uniform sampler2D u_texture;
 
 void main() {
     vec4 result = texture(u_texture, v_texindex) * v_color;

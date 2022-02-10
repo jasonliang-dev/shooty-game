@@ -12,6 +12,7 @@ void app_init(void) {
     app = new AppState{};
 
     app->renderer.create(12000);
+    app->water.create();
 
     u8 rgba[4] = {255, 255, 255, 255};
     sg_image_data image_data{};
@@ -158,6 +159,7 @@ void app_cleanup(void) {
     lua_close(app->lua);
     ma_engine_uninit(&app->ma);
     sg_destroy_image(app->white);
+    app->water.destroy();
     app->renderer.destroy();
     delete app;
     sg_shutdown();

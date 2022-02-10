@@ -38,7 +38,7 @@ function EntityGroup:get_by_id(id)
 end
 
 function EntityGroup:get_by_classname(classname)
-    return self.group_by_classname[classname]
+    return self.group_by_classname[classname] or {}
 end
 
 function EntityGroup:nearby_classname(classname, x, y, z, distance)

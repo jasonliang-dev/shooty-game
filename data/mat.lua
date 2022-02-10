@@ -30,6 +30,14 @@ function mat.mul(a, b)
     }
 end
 
+function mat.chain(...)
+    local acc = mat.identity()
+    for _, m in ipairs(table.pack(...)) do
+        acc = mat.mul(m, acc)
+    end
+    return acc
+end
+
 function mat.invert(a)
     local b01 = a[01] * a[06] - a[02] * a[05]
     local b02 = a[01] * a[07] - a[03] * a[05]
@@ -71,6 +79,14 @@ function mat.translate(x, y, z)
     m[13] = x
     m[14] = y
     m[15] = z
+    return m
+end
+
+function mat.scale(x, y, z)
+    local m = mat.identity()
+    m[1] = x
+    m[6] = y
+    m[11] = z
     return m
 end
 

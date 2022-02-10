@@ -171,7 +171,7 @@ static int aux_make_tilemap(lua_State *L) {
     lua_pushcfunction(L, [](lua_State *L) -> int {
         Tilemap *map = (Tilemap *)field_touserdata(L, 1, "udata");
 
-        RenMatrix mat{};
+        Matrix mat{};
         for (int i = 0; i < 16; i++) {
             lua_rawgeti(L, 2, i + 1);
             mat.arr[i] = (float)luaL_checknumber(L, -1);

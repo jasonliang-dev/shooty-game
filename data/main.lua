@@ -1,19 +1,15 @@
 local rooms = require "rooms"
 local mat = require "mat"
-local vec = require "vec"
 local keyboard = require "keyboard"
 local mouse = require "mouse"
-local lume = require "deps.lume"
 local flux = require "deps.flux"
 local Atlas = require "atlas"
-
-local vec3 = vec.vec3
 
 function core.init()
     SYS_PLATFORM = sys.platform()
     math.randomseed(0, 0)
 
-    snd.master_volume(0.5)
+    snd.master_volume(0.2)
     default_pass_clear_color = {0, 0, 0, 255}
 
     atl_tiles = assert(Atlas "data/content/tiles.rtpa")
@@ -24,9 +20,11 @@ function core.init()
 
     tsx_tiles = aux.make_tileset "data/content/tiles.json"
     tmx_lv1 = aux.make_tilemap("data/content/lv1.json", tsx_tiles)
+    tmx_lv2 = aux.make_tilemap("data/content/lv2.json", tsx_tiles)
 
-    rooms.start("menu", {
+    rooms.start("island", {
         test = require "rooms.test",
+        island = require "rooms.island",
         menu = require "rooms.menu",
     })
 end

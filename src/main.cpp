@@ -29,9 +29,6 @@
 #define STB_TRUETYPE_IMPLEMENTATION
 #include "deps/stb_truetype.h"
 
-#define SOKOL_SHDC_IMPL
-#include "shd_default.h"
-
 sapp_desc sokol_main(int argc, char **argv) {
     (void)argc;
     (void)argv;
