@@ -83,7 +83,8 @@ void Renderer::flush() {
         .fs_images = {u_texture},
     });
     vs_uniforms_default_t uniforms = {.u_mvp = u_mvp};
-    sg_apply_uniforms(SG_SHADERSTAGE_VS, SLOT_vs_uniforms_default, SG_RANGE(uniforms));
+    sg_apply_uniforms(SG_SHADERSTAGE_VS, SLOT_vs_uniforms_default,
+                      SG_RANGE(uniforms));
     sg_draw(0, m_vertex_count * 6 / 4, 1);
 
     m_vertex_count = 0;

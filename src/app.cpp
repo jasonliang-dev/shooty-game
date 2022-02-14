@@ -5,7 +5,7 @@
 
 AppState *app;
 
-void app_init(void) {
+void app_init() {
     sg_setup({.context = sapp_sgcontext()});
     stm_setup();
 
@@ -136,7 +136,7 @@ void app_event(const sapp_event *e) {
     }
 }
 
-void app_frame(void) {
+void app_frame() {
     u64 now = stm_now();
     float dt = stm_diff(now, app->time_now) / 1000000000.0f;
     app->time_now = now;
@@ -155,7 +155,7 @@ void app_frame(void) {
     }
 }
 
-void app_cleanup(void) {
+void app_cleanup() {
     lua_close(app->lua);
     ma_engine_uninit(&app->ma);
     sg_destroy_image(app->white);

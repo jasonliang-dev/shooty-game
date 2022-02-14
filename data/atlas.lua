@@ -9,7 +9,7 @@ function Atlas:new(filename)
     local handle = assert(io.open(filename))
 
     while true do
-        line = handle:read "*line"
+        local line = handle:read "*line"
         if not line then
             break
         end

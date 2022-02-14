@@ -1,6 +1,5 @@
 #pragma once
 
-#include <assert.h>
 #include <string.h>
 
 template <typename T> struct PriorityQueue {
@@ -44,7 +43,6 @@ template <typename T> struct PriorityQueue {
     }
 
     T pop_min() {
-        assert(m_size != 0);
         T top = m_data[0];
 
         m_data[0] = m_data[m_size - 1];

@@ -38,10 +38,6 @@ template <typename T> struct PODVector {
     const T *begin() const { return m_buffer; }
     T *end() { return m_buffer + m_size; }
     const T *end() const { return m_buffer + m_size; }
-    T &front() { return m_buffer[0]; }
-    const T &front() const { return m_buffer[0]; }
-    T &back() { return m_buffer[m_size - 1]; }
-    const T &back() const { return m_buffer[m_size - 1]; }
     T &operator[](int i) { return m_buffer[i]; }
     const T &operator[](int i) const { return m_buffer[i]; }
 
