@@ -18,7 +18,7 @@ function FollowEnemy:new(desc)
     self.dx = -1
 
     self.sprite = Sprite {
-        atlas = atl_entities,
+        atlas = ATL_ENTITIES,
         initial = "walk",
         animations = {
             walk = {ms_per_frame = 150, frames = {"robot2_1", "robot2_2"}}

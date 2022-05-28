@@ -2,6 +2,8 @@ local class = require "class"
 local vec2 = require "vec".vec2
 local enemy_common = require "enemy_common"
 
+local core = _G["core"]
+
 local SpinSpikeEnemy = class()
 SpinSpikeEnemy.classname = "SpinSpikeEnemy"
 
@@ -16,8 +18,8 @@ function SpinSpikeEnemy:new(desc)
     self.y = 0.4
     self.z = 1 / 0
 
-    self.spike_uv = atl_entities:uv "spike_1"
-    self.shadow_uv = atl_entities:uv "circle_small"
+    self.spike_uv = ATL_ENTITIES:uv "spike_1"
+    self.shadow_uv = ATL_ENTITIES:uv "circle_small"
 end
 
 function SpinSpikeEnemy:update(dt)
@@ -46,11 +48,11 @@ function SpinSpikeEnemy:draw()
 
     local uv = self.spike_uv
 
-    gfx.bind_texture(atl_entities.texture.id)
-    gfx.v3_t2(x1, y, z1, uv.u1, uv.v1)
-    gfx.v3_t2(x2, y, z2, uv.u1, uv.v2)
-    gfx.v3_t2(x3, y, z3, uv.u2, uv.v2)
-    gfx.v3_t2(x4, y, z4, uv.u2, uv.v1)
+    core.gfx.bind_texture(ATL_ENTITIES.texture.id)
+    core.gfx.v3_t2(x1, y, z1, uv.u1, uv.v1)
+    core.gfx.v3_t2(x2, y, z2, uv.u1, uv.v2)
+    core.gfx.v3_t2(x3, y, z3, uv.u2, uv.v2)
+    core.gfx.v3_t2(x4, y, z4, uv.u2, uv.v1)
 
     x1 = self.x - 0.4
     z1 = self.z - 0.4
@@ -58,10 +60,10 @@ function SpinSpikeEnemy:draw()
     z2 = self.z + 0.4
     uv = self.shadow_uv
 
-    gfx.v3_t2_c4(x1, 0.01, z1, uv.u1, uv.v1, 240, 240, 255, 32)
-    gfx.v3_t2_c4(x1, 0.01, z2, uv.u1, uv.v2, 240, 240, 255, 32)
-    gfx.v3_t2_c4(x2, 0.01, z2, uv.u2, uv.v2, 240, 240, 255, 32)
-    gfx.v3_t2_c4(x2, 0.01, z1, uv.u2, uv.v1, 240, 240, 255, 32)
+    core.gfx.v3_t2_c4(x1, 0.01, z1, uv.u1, uv.v1, 240, 240, 255, 32)
+    core.gfx.v3_t2_c4(x1, 0.01, z2, uv.u1, uv.v2, 240, 240, 255, 32)
+    core.gfx.v3_t2_c4(x2, 0.01, z2, uv.u2, uv.v2, 240, 240, 255, 32)
+    core.gfx.v3_t2_c4(x2, 0.01, z1, uv.u2, uv.v1, 240, 240, 255, 32)
 end
 
 return SpinSpikeEnemy

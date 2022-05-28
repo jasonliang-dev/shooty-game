@@ -1,5 +1,7 @@
 local class = require "class"
 
+local core = _G["core"]
+
 local Atlas = class()
 
 function Atlas:new(filename)
@@ -17,7 +19,7 @@ function Atlas:new(filename)
         if line:sub(1, 1) == "a" then
             local path = filename:match "(.*/)"
             local image = line:match "^a ([^%s]+) "
-            self.texture = aux.make_texture(path .. image)
+            self.texture = core.aux.make_texture(path .. image)
         elseif line:sub(1, 1) == "s" then
             local name, _, _, x, y, w, h, pad, trim, _, _, tw, th =
                 line:match "^s ([^%s]+) (%d+) (%d+) (%d+) (%d+) (%d+) (%d+) (%d+) (%d+) (%d+) (%d+) (%d+) (%d+)"

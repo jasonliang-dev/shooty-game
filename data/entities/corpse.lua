@@ -1,6 +1,8 @@
 local class = require "class"
 local vec2 = require "vec".vec2
 
+local core = _G["core"]
+
 local Corpse = class()
 Corpse.classname = "Corpse"
 
@@ -30,11 +32,11 @@ function Corpse:draw()
     local x4, y4 = vec2.rotate(self.rot, self.x + 0.5, self.y + 1.2, self.x, self.y + 0.6)
 
     local uv = self.uv
-    gfx.bind_texture(atl_entities.texture.id)
-    gfx.v3_t2(x1, y1, self.z, uv.u1, uv.v1)
-    gfx.v3_t2(x2, y2, self.z, uv.u1, uv.v2)
-    gfx.v3_t2(x3, y3, self.z, uv.u2, uv.v2)
-    gfx.v3_t2(x4, y4, self.z, uv.u2, uv.v1)
+    core.gfx.bind_texture(ATL_ENTITIES.texture.id)
+    core.gfx.v3_t2(x1, y1, self.z, uv.u1, uv.v1)
+    core.gfx.v3_t2(x2, y2, self.z, uv.u1, uv.v2)
+    core.gfx.v3_t2(x3, y3, self.z, uv.u2, uv.v2)
+    core.gfx.v3_t2(x4, y4, self.z, uv.u2, uv.v1)
 end
 
 return Corpse

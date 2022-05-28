@@ -1,13 +1,17 @@
 local Spring = require "spring"
 local Progress = require "progress"
 local Corpse = require "entities.corpse"
-local vec3 = require "vec".vec3
 
+local core = _G["core"]
+
+-- enemy needs:
+-- x, y, z
+-- sprite
 local enemy_common = {}
 
 function enemy_common.init(entity, desc)
-    entity.hit_spring = Spring()
-    entity.p_hit = Progress(0.1, true)
+    entity.spring = Spring()
+    entity.p_flash = Progress(0.1, true)
     entity.health = desc.health
 end
 
@@ -15,8 +19,8 @@ function enemy_common.update(entity, desc)
     local dt = desc.dt
     local collision_distance = desc.collision_distance or 1
 
-    entity.hit_spring:update(dt)
-    entity.p_hit:update(dt)
+    entity.spring:update(dt)
+    entity.p_flash:update(dt)
 
     enemy_common.bullet_collision(entity, collision_distance)
     enemy_common.player_collision(entity, collision_distance)
@@ -26,8 +30,8 @@ function enemy_common.bullet_collision(entity, distance)
     local bullets = entity.group:nearby_classname("Bullet", entity.x, entity.y + 0.5, entity.z, distance)
     if next(bullets) then
         entity.health = entity.health - 1
-        entity.hit_spring:pull(0.2)
-        entity.p_hit.time = 0
+        entity.spring:pull(0.2)
+        entity.p_flash.time = 0
         for _, bullet in pairs(bullets) do
             bullet.dead = true
         end
@@ -53,7 +57,7 @@ function enemy_common.player_collision(entity, distance)
 end
 
 function enemy_common.on_death(entity)
-    snd.play "data/content/death.wav"
+    core.snd.play "data/content/death.wav"
 
     entity.group:add(Corpse, {
         x = entity.x,
@@ -71,25 +75,25 @@ function enemy_common.draw(entity)
     local y2 = entity.y
     local z2 = entity.z
 
-    x1 = x1 - entity.hit_spring.x
-    x2 = x2 + entity.hit_spring.x
-    y1 = y1 - entity.hit_spring.x
-    y2 = y2 + entity.hit_spring.x
+    x1 = x1 - entity.spring.x
+    x2 = x2 + entity.spring.x
+    y1 = y1 - entity.spring.x
+    y2 = y2 + entity.spring.x
 
     local uv = entity.sprite:uv()
-    local u1 = entity.dx < 0 and uv.u1 or uv.u2
+    local u1 = entity.dx and entity.dx < 0 and uv.u1 or uv.u2
     local v1 = uv.v1
-    local u2 = entity.dx < 0 and uv.u2 or uv.u1
+    local u2 = entity.dx and entity.dx < 0 and uv.u2 or uv.u1
     local v2 = uv.v2
 
-    local p = 1 - math.min(1, entity.p_hit:percent())
+    local p = 1 - math.min(1, entity.p_flash:percent())
     p = math.floor(p * 255)
 
-    gfx.bind_texture(entity.sprite.atlas.texture.id)
-    gfx.v3_t2_f4(x1, y1, z1, u1, v1, p, p, p, p)
-    gfx.v3_t2_f4(x1, y2, z2, u1, v2, p, p, p, p)
-    gfx.v3_t2_f4(x2, y2, z2, u2, v2, p, p, p, p)
-    gfx.v3_t2_f4(x2, y1, z1, u2, v1, p, p, p, p)
+    core.gfx.bind_texture(entity.sprite.atlas.texture.id)
+    core.gfx.v3_t2_f4(x1, y1, z1, u1, v1, p, p, p, p)
+    core.gfx.v3_t2_f4(x1, y2, z2, u1, v2, p, p, p, p)
+    core.gfx.v3_t2_f4(x2, y2, z2, u2, v2, p, p, p, p)
+    core.gfx.v3_t2_f4(x2, y1, z1, u2, v1, p, p, p, p)
 end
 
 return enemy_common

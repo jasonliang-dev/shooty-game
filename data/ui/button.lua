@@ -3,6 +3,8 @@ local mouse = require "mouse"
 local flux = require "deps.flux"
 local Spring = require "spring"
 
+local core = _G["core"]
+
 local Button = class()
 
 local noop = function() end
@@ -60,11 +62,11 @@ function Button:draw()
 
     local shr = 0
     local r, g, b, a = table.unpack(self.color)
-    gfx.bind_white_texture()
-    gfx.v3_t2_c4(x1,       y1, 0, 0, 0, r, g, b, a)
-    gfx.v3_t2_c4(x1 - shr, y2, 0, 0, 0, r, g, b, a)
-    gfx.v3_t2_c4(x2,       y2, 0, 0, 0, r, g, b, a)
-    gfx.v3_t2_c4(x2 + shr, y1, 0, 0, 0, r, g, b, a)
+    core.gfx.bind_white_texture()
+    core.gfx.v3_t2_c4(x1,       y1, 0, 0, 0, r, g, b, a)
+    core.gfx.v3_t2_c4(x1 - shr, y2, 0, 0, 0, r, g, b, a)
+    core.gfx.v3_t2_c4(x2,       y2, 0, 0, 0, r, g, b, a)
+    core.gfx.v3_t2_c4(x2 + shr, y1, 0, 0, 0, r, g, b, a)
 
     self.font:print(self.text, self.text_x, self.y - self.off_y_spring.x * 2)
 end

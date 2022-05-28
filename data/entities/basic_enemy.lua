@@ -1,7 +1,5 @@
 local class = require "class"
 local Sprite = require "sprite"
-local Spring = require "spring"
-local Progress = require "progress"
 local enemy_common = require "enemy_common"
 
 local BasicEnemy = class()
@@ -19,7 +17,7 @@ function BasicEnemy:new(desc)
     self.dz = desc.dz
 
     self.sprite = Sprite {
-        atlas = atl_entities,
+        atlas = ATL_ENTITIES,
         initial = "walk",
         animations = {
             walk = {ms_per_frame = 150, frames = {"robot1_1", "robot1_2"}}

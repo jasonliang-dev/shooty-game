@@ -2,6 +2,8 @@ local class = require "class"
 local vec2 = require "vec".vec2
 local Sprite = require "sprite"
 
+local core = _G["core"]
+
 local Explode = class()
 Explode.classname = "Explode"
 
@@ -14,14 +16,14 @@ function Explode:new(desc)
     self.z = desc.z
 
     self.sprite = Sprite {
-        atlas = atl_entities,
+        atlas = ATL_ENTITIES,
         initial = "default",
         animations = {
             default = {ms_per_frame = 50, frames = {"explode_1", "explode_2", "explode_3", "explode_4"}}
         }
     }
 
-    snd.play "data/content/boom.wav"
+    core.snd.play "data/content/boom.wav"
 end
 
 function Explode:update(dt)
@@ -41,20 +43,20 @@ function Explode:draw()
     local z2 = self.z + pad
 
     local uv = self.sprite:uv()
-    gfx.bind_texture(self.sprite.atlas.texture.id)
-    gfx.v3_t2(x1, y1, z1, uv.u1, uv.v1)
-    gfx.v3_t2(x1, y2, z1, uv.u1, uv.v2)
-    gfx.v3_t2(x2, y2, z2, uv.u2, uv.v2)
-    gfx.v3_t2(x2, y1, z2, uv.u2, uv.v1)
+    core.gfx.bind_texture(self.sprite.atlas.texture.id)
+    core.gfx.v3_t2(x1, y1, z1, uv.u1, uv.v1)
+    core.gfx.v3_t2(x1, y2, z1, uv.u1, uv.v2)
+    core.gfx.v3_t2(x2, y2, z2, uv.u2, uv.v2)
+    core.gfx.v3_t2(x2, y1, z2, uv.u2, uv.v1)
 
-    gfx.v3_t2(x1, y1, z2, uv.u1, uv.v1)
-    gfx.v3_t2(x1, y2, z2, uv.u1, uv.v2)
-    gfx.v3_t2(x2, y2, z1, uv.u2, uv.v2)
-    gfx.v3_t2(x2, y1, z1, uv.u2, uv.v1)
+    core.gfx.v3_t2(x1, y1, z2, uv.u1, uv.v1)
+    core.gfx.v3_t2(x1, y2, z2, uv.u1, uv.v2)
+    core.gfx.v3_t2(x2, y2, z1, uv.u2, uv.v2)
+    core.gfx.v3_t2(x2, y1, z1, uv.u2, uv.v1)
 end
 
 function Bullet:new(desc)
-    self.uv = atl_entities:uv "bullet_1"
+    self.uv = ATL_ENTITIES:uv "bullet_1"
     self.x = desc.x
     self.y = 0.4
     self.z = desc.z
@@ -63,7 +65,7 @@ function Bullet:new(desc)
     self.lifetime = 5
     self.rot = desc.rot - math.pi / 2
 
-    snd.play "data/content/beep.wav"
+    core.snd.play "data/content/beep.wav"
 end
 
 function Bullet:update(dt)
@@ -96,11 +98,11 @@ function Bullet:draw()
     local x4, z4 = vec2.rotate(self.rot, self.x + 0.5, self.z - 0.5, self.x, self.z)
     local uv = self.uv
 
-    gfx.bind_texture(atl_entities.texture.id)
-    gfx.v3_t2(x1, self.y, z1, uv.u1, uv.v1)
-    gfx.v3_t2(x2, self.y, z2, uv.u1, uv.v2)
-    gfx.v3_t2(x3, self.y, z3, uv.u2, uv.v2)
-    gfx.v3_t2(x4, self.y, z4, uv.u2, uv.v1)
+    core.gfx.bind_texture(ATL_ENTITIES.texture.id)
+    core.gfx.v3_t2(x1, self.y, z1, uv.u1, uv.v1)
+    core.gfx.v3_t2(x2, self.y, z2, uv.u1, uv.v2)
+    core.gfx.v3_t2(x3, self.y, z3, uv.u2, uv.v2)
+    core.gfx.v3_t2(x4, self.y, z4, uv.u2, uv.v1)
 end
 
 return Bullet

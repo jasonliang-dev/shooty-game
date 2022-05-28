@@ -6,6 +6,8 @@ local StateMachine = require "state_machine"
 local Progress = require "progress"
 local enemy_common = require "enemy_common"
 
+local core = _G["core"]
+
 local FlyingEnemy = class()
 FlyingEnemy.classname = "FlyingEnemy"
 
@@ -21,10 +23,10 @@ function FlyingEnemy:new(desc)
     self.target_x = 0
     self.target_z = 0
     self.p_attack = Progress(desc.attack_time)
-    self.shadow = atl_entities:uv "circle_small"
+    self.shadow = ATL_ENTITIES:uv "circle_small"
 
     self.sprite = Sprite {
-        atlas = atl_entities,
+        atlas = ATL_ENTITIES,
         initial = "fly",
         animations = {
             fly = {ms_per_frame = 150, frames = {"bat_1", "bat_2", "bat_3", "bat_2"}},
@@ -83,7 +85,7 @@ function FlyingEnemy:fsm_enter_attack()
     self.target_z = self.z + (player.z - self.z) * 2
     self.p_attack.time = 0
 
-    snd.play "data/content/woosh.wav"
+    core.snd.play "data/content/woosh.wav"
 end
 
 function FlyingEnemy:fsm_attack(dt)
@@ -113,10 +115,10 @@ function FlyingEnemy:draw()
     local z2 = self.z + 0.4
     local uv = self.shadow
 
-    gfx.v3_t2_c4(x1, 0.01, z1, uv.u1, uv.v1, 240, 240, 255, 32)
-    gfx.v3_t2_c4(x1, 0.01, z2, uv.u1, uv.v2, 240, 240, 255, 32)
-    gfx.v3_t2_c4(x2, 0.01, z2, uv.u2, uv.v2, 240, 240, 255, 32)
-    gfx.v3_t2_c4(x2, 0.01, z1, uv.u2, uv.v1, 240, 240, 255, 32)
+    core.gfx.v3_t2_c4(x1, 0.01, z1, uv.u1, uv.v1, 240, 240, 255, 32)
+    core.gfx.v3_t2_c4(x1, 0.01, z2, uv.u1, uv.v2, 240, 240, 255, 32)
+    core.gfx.v3_t2_c4(x2, 0.01, z2, uv.u2, uv.v2, 240, 240, 255, 32)
+    core.gfx.v3_t2_c4(x2, 0.01, z1, uv.u2, uv.v1, 240, 240, 255, 32)
 end
 
 return FlyingEnemy

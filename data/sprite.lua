@@ -6,12 +6,12 @@ function Sprite:new(desc)
     self.atlas = desc.atlas
 
     self.animations = {}
-    for name, desc in pairs(desc.animations) do
+    for name, animation in pairs(desc.animations) do
         self.animations[name] = {
-            ms_per_frame = desc.ms_per_frame,
+            ms_per_frame = animation.ms_per_frame,
             frames = {},
         }
-        for _, str in ipairs(desc.frames) do
+        for _, str in ipairs(animation.frames) do
             table.insert(self.animations[name].frames, self.atlas:uv(str))
         end
     end

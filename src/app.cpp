@@ -32,13 +32,21 @@ void app_init() {
 
     lua_State *L = app->lua = luaL_newstate();
     luaL_openlibs(L);
-    luaL_requiref(L, "sys", sys_lib, true);
-    luaL_requiref(L, "gfx", gfx_lib, true);
-    luaL_requiref(L, "aux", aux_lib, true);
-    luaL_requiref(L, "snd", snd_lib, true);
-    lua_pop(L, 4);
 
     lua_newtable(L);
+
+    luaL_requiref(L, "sys", sys_lib, false);
+    lua_setfield(L, -2, "sys");
+
+    luaL_requiref(L, "gfx", gfx_lib, false);
+    lua_setfield(L, -2, "gfx");
+
+    luaL_requiref(L, "aux", aux_lib, false);
+    lua_setfield(L, -2, "aux");
+
+    luaL_requiref(L, "snd", snd_lib, false);
+    lua_setfield(L, -2, "snd");
+
     lua_setglobal(L, "core");
 
     const char *bootstrap = "xpcall(function()\n"

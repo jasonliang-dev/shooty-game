@@ -1,10 +1,12 @@
 local vec3 = require "vec".vec3
 
+local core = _G["core"]
+
 local ray = {}
 
 function ray.from_screen(x, y, camera)
-    local xx = (2 * x) / sys.window_width() - 1
-    local yy = 1 - (2 * y) / sys.window_height()
+    local xx = (2 * x) / core.sys.window_width() - 1
+    local yy = 1 - (2 * y) / core.sys.window_height()
 
     local projection = camera:view_projection()
     local vnear = vec3.unproject({x = xx, y = yy, z = 0}, projection)

@@ -4,8 +4,8 @@
 
 template <typename T> struct PriorityQueue {
     void destroy() {
-        delete[] m_data;
-        delete[] m_costs;
+        operator delete(m_data);
+        operator delete(m_costs);
     }
 
     void reserve(int capacity) {
@@ -18,9 +18,9 @@ template <typename T> struct PriorityQueue {
         operator delete(m_data);
         m_data = data;
 
-        float *costs = new float[capacity];
+        float *costs = (float *)operator new(sizeof(float) * capacity);
         memcpy(costs, m_costs, sizeof(float) * m_size);
-        delete[] m_costs;
+        operator delete(m_costs);
         m_costs = costs;
 
         m_capacity = capacity;

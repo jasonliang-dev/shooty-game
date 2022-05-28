@@ -10,6 +10,8 @@ local StateMachine = require "state_machine"
 local Spring = require "spring"
 local Progress = require "progress"
 
+local core = _G["core"]
+
 local Player = class()
 Player.classname = "Player"
 
@@ -34,7 +36,7 @@ function Player:new(desc)
     self.p_invulnerable = Progress(1, true)
 
     self.sprite = Sprite {
-        atlas = atl_entities,
+        atlas = ATL_ENTITIES,
         initial = "idle",
         animations = {
             idle = {ms_per_frame = 110, frames = {"char1_1"}},
@@ -76,6 +78,7 @@ function Player:late_update(dt)
             self.dx = self.hit_this_frame.dx
             self.dz = self.hit_this_frame.dz
             self.fsm:transition "hurt"
+            self.camera:shake(0.2, 0.8)
         end
 
         self.hit_this_frame = nil
@@ -159,7 +162,7 @@ end
 
 function Player:fsm_enter_dash()
     self.sprite:play "dash"
-    snd.play "data/content/swish.wav"
+    core.snd.play "data/content/swish.wav"
 end
 
 function Player:fsm_dash(dt)
@@ -273,11 +276,28 @@ function Player:draw()
         r, g, b, a = 255, 255, 255, 255
     end
 
-    gfx.bind_texture(self.sprite.atlas.texture.id)
-    gfx.v3_t2_c4(x1, y1, z1, u1, v1, r, g, b, a)
-    gfx.v3_t2_c4(x2, y2, z2, u1, v2, r, g, b, a)
-    gfx.v3_t2_c4(x3, y3, z2, u2, v2, r, g, b, a)
-    gfx.v3_t2_c4(x4, y4, z1, u2, v1, r, g, b, a)
+    core.gfx.bind_texture(self.sprite.atlas.texture.id)
+    core.gfx.v3_t2_c4(x1, y1, z1, u1, v1, r, g, b, a)
+    core.gfx.v3_t2_c4(x2, y2, z2, u1, v2, r, g, b, a)
+    core.gfx.v3_t2_c4(x3, y3, z2, u2, v2, r, g, b, a)
+    core.gfx.v3_t2_c4(x4, y4, z1, u2, v1, r, g, b, a)
+end
+
+function Player:draw_hp_bar(x, y)
+    for i = 1, self.health do
+        local x1 = x + (i - 1) * 48
+        local y1 = y
+        local x2 = x1 + 32
+        local y2 = y1 + 32
+
+        local uv = self.sprite.atlas:uv "heart"
+
+        core.gfx.bind_texture(self.sprite.atlas.texture.id)
+        core.gfx.v3_t2(x1, y1, 0, uv.u1, uv.v1)
+        core.gfx.v3_t2(x1, y2, 0, uv.u1, uv.v2)
+        core.gfx.v3_t2(x2, y2, 0, uv.u2, uv.v2)
+        core.gfx.v3_t2(x2, y1, 0, uv.u2, uv.v1)
+    end
 end
 
 return Player
